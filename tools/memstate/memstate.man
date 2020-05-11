@@ -1,0 +1,116 @@
+.TH OLED MEMSTATE 8 "Jul 2021" "Oracle Linux Enhanced Diagnostics" "0.5"
+
+.SH NAME
+oled memstate - Captures and analyzes various memory usage statistics on the
+running system.
+
+.SH SYNOPSIS
+oled memstate [-h] [-p] [-w] [-s [FILE]] [-n [FILE]] [-a] [-v] [-f [INTERVAL]]
+
+.SH DESCRIPTION
+The memstate tool gathers data about memory usage on the system where it's run,
+and analyzes the raw data to compute various statistics, including total memory
+used by kernel/userspace allocations, a list of top 10 processes consuming most
+memory, the 10 biggest slab caches, the top 10 swap space consumers, etc. It
+can also display per-process memory usage, including how the allocations are
+split across the NUMA nodes (if applicable). The tool checks, and prints warnings
+for, any abnormalities detected; for instance -  excessive slab growth or large
+page tables, NUMA imbalance, or invalid vm.min_free_kbytes config. The tool also
+supports an offline mode to analyze slab and NUMA stats - see OPTIONS for more
+details.
+
+.SH OPTIONS
+.TP
+-h, --help
+    Displays a help message with all the valid options that
+can be passed to the tool.
+
+.TP
+-p, --pss
+    Displays per-process memory usage, for the top 10 process
+memory consumers. This gathers data from /proc/<pid>/smaps files and sorts them,
+to display the most memory intensive processes on the system. Use with
+-v/--verbose to get memory usage data for all processes on the system. Note
+that this processing can be quite expensive w.r.t. time taken/CPU cycles, esp.
+if run on a heavily-loaded system. So it is not recommended to invoke this
+option (with or without -v/--verbose - that does not matter) too often.
+
+.TP
+-w, --swap
+    Displays per-process swap usage, for the top 10 swap consumers. This
+data is gathered from /proc/<pid>/status files and sorted. Does not support
+-v/--verbose output.
+
+.TP
+-s [FILE], --slab [FILE]
+     Analyzes/displays slab usage. It takes an optional file
+input, which should contain the output of 'cat /proc/slabinfo'. This can be
+used to analyze the slab usage on another system offline. To display the
+slab usage on the current/running system, simply omit the file input. This
+option can also be combined with -v/--verbose, which will display all slab
+caches, without which it will display 10 biggest slab caches. This data is
+gathered from /proc/slabinfo.
+
+.TP
+-n [FILE], --numa [FILE]
+    Analyzes/displays NUMA stats. It extracts per-NUMA node
+meminfo data from /sys/devices/system/node/nodeX/meminfo. When combined with
+-v/--verbose, it also walks /proc/<pid>/numa_maps for all processes on the
+system and computes their total memory allocations on each NUMA node, and
+displays them in a sorted fashion. Note that this processing can be quite
+expensive w.r.t. time taken/CPU cycles, esp. if run on a heavily-loaded system.
+So it is not recommended to invoke -n/--numa with -v/--verbose too often.
+
+It also takes an optional file input (this can be used for offline processing),
+which should contain the contents of /proc/*/numa_maps files as well as
+/proc/*/comm files. One way to generate this input file is using this shell
+script:
+
+PROCS=/proc/*; for p in $PROCS; do COMM=$(cat $p/comm); \
+	MAPS=$(cat $p/numa_maps); echo "$COMM:"; echo "$MAPS"; done
+
+and redirecting it to a file. This file can be passed as input, with
+-n, to analyze and display per-NUMA node memory allocation statistics for each
+process.
+
+.TP
+-a, --all
+    Displays all data. This option displays a basic memory usage summary,
+plus the biggest slab caches, the top swap space consumers along with the NUMA
+stats summary. If combined with -v/--verbose, it also checks/displays per-process
+memory use, but this can be an expensive operation. See -p/--pss for more
+details.
+
+.TP
+-v, --verbose
+    Verbose data capture; this should be combined with other
+options except -w/--swap (see other options for details).
+
+.TP
+-f [INTERVAL], --frequency [INTERVAL]
+    Interval at which data should be collected periodically.
+The default is 30 seconds; the user can pass in a different interval (in
+seconds) as an optional parameter for this option. Note that the lowest valid
+interval value is 5 seconds.
+
+This option can be combined with most of the options above to capture desired
+data periodically. The data will be written to the file
+'/var/oled/memstate/memstate.log' which is rotated and compressed, by logrotate.
+Each file can grow to a max size of 20 MB, and at most 20 files are retained.
+
+After compresssion, the size of /var/oled/memstate/ directory on disk will be
+around 20 - 40 MB. The tool tries not to fill up the partition, so it checks
+before running if there is at least 50 MB available in that file system and if
+the disk utilization is <= 85%. If not, it will exit with an error message.
+
+.SH MISC
+.TP
+The tool can be run on any Oracle Linux 6, 7 or 8 server.
+
+.SH REPORTING BUGS
+.TP
+Please contact Oracle Linux Support to report any bugs for OLED tools.
+
+.SH SEE ALSO
+.TP
+oled memtracker

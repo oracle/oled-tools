@@ -1,0 +1,69 @@
+.TH OLED DENTRYCACHE 8 "Jul 2021" "Oracle Linux Enhanced Diagnostics" "0.5"
+
+.SH NAME
+oled dentrycache - Lists a sample of file paths which have active dentries
+in the dentry hash table. 
+
+.SH SYNOPSIS
+oled dentrycache [-l] [-n] [-k] [-h] [-v]
+
+.SH DESCRIPTION
+The dentrycache tool can be used to debug the issue of large dentry slab
+caches, and to get an idea of what kind of files have been accessed,
+for the dentry slab cache to bloat.
+
+The tool dumps file paths associated with active dentries, on live systems.
+By default, it lists 10000 dentry paths - one dentry per line. These are not
+sorted or in any particular order.
+
+Sample output:
+.TS
+l l l .
+00000001 /var/tmp/.4091917356_dOeSnotExist_.db (negative)
+00000002 /etc/pki/nssdb/.4081046580_dOeSnotExist_.db (negative)
+00000003 /etc/pki/nssdb/.4091456181_dOeSnotExist_.db (negative)
+00000004 /etc/pki/nssdb/.4092693512_dOeSnotExist_.db (negative)
+00000005 /var/tmp/.680628186_dOeSnotExist_.db (negative)
+.TE
+\&...\&
+
+The first column is just an index for the output.
+
+.SH OPTIONS
+.TP
+-h, --help
+    Displays a help message with all the valid options that
+can be passed to the tool.
+
+.TP
+-l, --limit
+    Maximum number of dentries, to list. The default is 10000.
+
+.TP
+-n, --negative
+    Only list negative dentries. Negative dentries are those that correspond
+to files that do not exist. For instance, if a user/application looks up a file
+that does not exist (but does not create said file), then that will create a
+negative dentry. By default, this is disabled.
+
+.TP
+-k, --kexec
+    Run in kexec kernel mode - i.e., when the production kernel crashes and
+reboots into the kexec kernel. Here, the kdump kernel should be the same binary
+as the production kernel.
+
+.TP
+-v, --version
+    Display version information.
+
+.SH MISC
+.TP
+The tool can be run on any Oracle Linux 6, 7 or 8 server.
+
+.SH REPORTING BUGS
+.TP
+Please contact Oracle Linux Support to report any bugs for OLED tools.
+
+.SH SEE ALSO
+.TP
+oled filecache

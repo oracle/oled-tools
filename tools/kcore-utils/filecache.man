@@ -1,0 +1,92 @@
+.TH OLED FILECACHE 8 "Jul 2021" "Oracle Linux Enhanced Diagnostics" "0.5"
+
+.SH NAME
+oled filecache - List the paths of the biggest files present in the page cache.
+
+.SH SYNOPSIS
+oled filecache [-n] [-m] [-u] [-k] [-h] [-v]
+
+.SH DESCRIPTION
+The filecache tool lists the files that are present in the page cache of the
+system where it's run, and sorts the output in descending order based on size,
+where size is the number of pages present in the page cache (and not the size
+of the file on disk).
+
+The page cache can hold too many small files, but most of them are not very
+interesting for debug purposes since they don't use too much memory.
+
+Sample output:
+.TS
+l l l l .
+PAGES    SIZE      FS_TYPE   FILE
+-----    ----      -------   ----
+4716454  17.99GB   xfs       /root/ritiksri/System.first.boot.21.1.0.0.0.200910.img
+809907   3.09GB    xfs       /root/ritiksri/System.tar.gz
+533562   2.04GB    xfs       /var/oled/memstate.log
+157032   613.41MB  xfs       /var/log/messages-20210321
+156009   609.41MB  xfs       /var/log/messages-20210328
+155974   609.27MB  xfs       /var/log/messages-20210314
+155236   606.39MB  xfs       /var/log/messages-20210404
+.TE
+\&...\&
+
+The output is one line per file, and consists of the number of pages of that
+file that are in the page cache, the total size, file name and filesystem
+type.
+
+The tool takes two parameters that control the number of file names to dump:
+--topn \fIMAX_FILES\fR and --min \fIMIN_PAGES\fR. The parameter \fIMAX_FILES\fR
+is a limit on the maximum number of files that will be listed in the output. By
+default, this is set to 50. The parameter \fIMIN_PAGES\fR is the minimum number
+of pages (of a given file) that must be present in the page cache - only files
+with at least \fIMIN_PAGES\fR pages in the cache are listed in the tool's
+output. By default, this is 1000.
+
+On a NUMA-enabled system, the memory used to cache all/part of a file can be
+allocated from any NUMA node, and often we might want to know how the
+allocations are divided across the NUMA nodes. The option -u will also dump
+that data. This option is not valid if NUMA is not enabled on that system.
+
+.SH OPTIONS
+.TP
+-h, --help
+    Displays a help message with all the valid options that
+can be passed to the tool.
+
+.TP
+-n, --topn \fIMAX_FILES\fR
+    Maximum number of files that will be listed, in the output. This will
+be sorted in descending order, so the biggest \fIMAX_FILES\fR files in the page
+cache will be listed. The default is 50.
+
+.TP
+-m, --min \fIMIN_PAGES\fR
+    List files with at least \fIMIN_PAGES\fR or more pages in the cache.
+The default is 1000.
+
+.TP
+-u, --numa
+    Report per-NUMA allocation statistics. See description above. This is
+disabled by default.
+
+.TP
+-k, --kexec
+    Run in kexec kernel mode - i.e., when the production kernel crashes and
+reboots into the kexec kernel. Here, the kdump kernel should be the same binary
+as the production kernel.
+
+.TP
+-v, --version
+    Display version information.
+
+.SH MISC
+.TP
+The tool can be run on any Oracle Linux 6, 7 or 8 server.
+
+.SH REPORTING BUGS
+.TP
+Please contact Oracle Linux Support to report any bugs for OLED tools.
+
+.SH SEE ALSO
+.TP
+oled dentrycache

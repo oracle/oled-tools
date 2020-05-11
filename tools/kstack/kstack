@@ -1,0 +1,786 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2020, Oracle and/or its affiliates.
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+#
+# This code is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 only, as
+# published by the Free Software Foundation.
+#
+# This code is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# version 2 for more details (a copy is included in the LICENSE file that
+# accompanied this code).
+#
+# You should have received a copy of the GNU General Public License version
+# 2 along with this work; if not, see <https://www.gnu.org/licenses/>.
+#
+# Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+# or visit www.oracle.com if you need additional information or have any
+# questions.
+
+###############################################################################
+#
+# NAME: kstack
+#
+# AUTHOR: Cesar Roque
+#
+# DESCRIPTION: Collect the kernel stack trace for selected processes.
+#
+# HISTORY:
+#
+# Fri Jul 24 10:45:00 PDT 2020 - Initial version.
+#
+############################################################
+
+import logging as stdlogging
+import fcntl
+from sys import exit as sysexit, argv
+from datetime import datetime, timedelta
+from time import sleep, ctime, strftime, localtime, gmtime
+from os import path as ospath, listdir, geteuid, fork, sysconf_names, \
+    sysconf, remove as remove_file, system, makedirs
+from linecache import getline
+from optparse import OptionParser, OptionGroup, TitledHelpFormatter
+from multiprocessing import Process
+from socket import gethostname
+from subprocess import Popen, PIPE
+from string import printable
+
+
+# noinspection PyUnboundLocalVariable,PyUnresolvedReferences
+class Error(Exception):
+    """ Exception for general error """
+    # pylint: disable=W0231, W0621
+
+    # noinspection PyShadowingNames
+    def __init__(self, message, trace=None):
+        try:
+            logging
+        except NameError:
+            logging = Logging()
+        logging.error(str(message))
+        if trace is not None:
+            logging.error(trace)
+        sysexit(1)
+
+
+class FileLock(object):
+    """ Implements a lock file """
+
+    def __init__(self):
+
+        self.file_path = None
+        self.lock_file = None
+        self.locked = False
+        self.__create_lock()
+
+    def __create_lock(self):
+        """ Creates the directory and lock file """
+
+        directory = ospath.join("/run/lock", ospath.split(argv[0])[1])
+        if not ospath.isdir(directory):
+            try:
+                makedirs(directory, mode=0o700)
+            except Exception as error:
+                raise Error("Unable to create the directory: %s:\n%s" % (directory, error))
+        self.file_path = ospath.join(directory, "lock")
+        self.lock_file = open(self.file_path, "w")
+        ops = fcntl.LOCK_EX
+        ops |= fcntl.LOCK_NB
+        try:
+            fcntl.flock(self.lock_file, ops)
+            self.locked = True
+        except IOError:
+            raise Error("Another instance of kstack is already running")
+
+    def __del__(self):
+        self.clean()
+
+    def clean(self):
+        """ Removes the file """
+        if self.locked is True:
+            self.lock_file.close()
+            remove_file(self.file_path)
+
+
+class Cmd(object):
+    """ Runs an OS command """
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self):
+        self.out = None
+        self.error = None
+        self.code = None
+        self.pid = None
+
+    def run(self, command):
+        """ Runs an OS command """
+        # pylint: disable=W0110
+
+        result = Popen(command.split(),
+                       stdout=PIPE,
+                       stderr=PIPE)
+
+        try:
+            (out, error) = result.communicate()
+            self.code = result.returncode
+            self.pid = result.pid
+            self.error = "".join(error.decode('utf-8'))
+        except Exception as error:
+            raise Error("An error has occurred:\n%s" % error)
+
+        self.out = "".join(filter(lambda x: x in printable, out.decode('utf-8')))
+
+
+class Logging(object):
+    """ Class to get logger """
+    # pylint: disable=R0902
+
+    def __init__(self, level=None):
+        """ Init definition """
+
+        self.trace_level = 5
+        self.__logger = None
+        self.__logging_enabled = False
+        self.to_file = None
+        self.to_console = None
+        self.log_format = None
+        self.date_format = None
+        self.file_level = None
+        self.console_level = None
+        self.log_file = None
+        self.level = level
+
+        self.__get_logger()
+
+    def __log_level(self, level):
+        """ Returns the log level """
+        # pylint: disable=R1705
+
+        if level is None:
+            return stdlogging.INFO
+        else:
+            if level == 0:
+                return stdlogging.INFO
+            elif level == 1:
+                return stdlogging.DEBUG
+            else:
+                return self.trace_level
+
+    def __get_params(self):
+        """ Gets the information from conf module """
+        # pylint: disable=W0703
+
+        self.to_file = False
+        self.to_console = True
+        self.file_level = stdlogging.DEBUG
+        self.console_level = stdlogging.INFO
+        self.log_file = "/var/log/kstack.log"
+
+        self.log_format = "%(asctime)s.%(msecs)d %(levelname)-8s\t%(message)s"
+        self.date_format = "%Y-%m-%d %H:%M:%S"
+
+    def __get_logger(self):
+        """ Checks if logger is already setup """
+
+        if not stdlogging.getLogger('').handlers:
+            self.__get_params()
+            if self.to_file or self.to_console:
+                self.__start_logging()
+                self.__logging_enabled = True
+        else:
+            self.__logger = stdlogging.getLogger('')
+            self.__logging_enabled = True
+
+    def __start_logging(self):
+        """ Starts logging """
+
+        stdlogging.addLevelName(self.trace_level, 'TRACE')
+        log_formatter = stdlogging.Formatter(self.log_format,
+                                             datefmt=self.date_format)
+        self.__logger = stdlogging.getLogger()
+        self.__logger.setLevel(self.trace_level)
+        self.__logger.propagate = False
+
+        if self.to_file:
+            file_handler = stdlogging.FileHandler(self.log_file)
+            file_handler.setFormatter(log_formatter)
+            file_handler.setLevel(self.file_level)
+            self.__logger.addHandler(file_handler)
+
+        if self.to_console:
+            console_handler = stdlogging.StreamHandler()
+            console_handler.setFormatter(log_formatter)
+
+            if self.level is not None:
+                console_handler.setLevel(self.__log_level(self.level))
+            else:
+                console_handler.setLevel(self.console_level)
+            self.__logger.addHandler(console_handler)
+
+    def trace(self, mess):
+        """ Prints trace message """
+        self.__logger.log(5, str(mess))
+
+    def info(self, mess):
+        """ Prints info message """
+        self.__logger.info(str(mess))
+
+    def warning(self, mess):
+        """ Prints warning message """
+        self.__logger.warning(str(mess))
+
+    def error(self, mess):
+        """ Prints error message """
+        self.__logger.error(str(mess))
+
+    def debug(self, mess):
+        """ Prints debug message """
+        self.__logger.debug(str(mess))
+
+
+class LogRotate(object):
+    """ Class to handle rotatation of the output files """
+    # pylint: disable=R0903
+
+    def __init__(self, filename, max_size, max_files, compress=True):
+        from tempfile import NamedTemporaryFile
+
+        self.file_name = filename
+        self.max_size = max_size
+        self.max_files = max_files
+        self.compress = compress
+        self.rotate_config = NamedTemporaryFile(delete=False)
+
+        self.__prepare()
+        self.rotate(True)
+
+    def __prepare(self):
+        """ Prepares the logrotate file and output directory """
+        # pylint: disable=W0404, W0621, W0703
+
+        from os import makedirs, path as opath
+        from platform import release
+
+        # Create directory if doesn't exist
+        directory = opath.split(self.file_name)[0]
+        if not opath.exists(directory):
+            logging.debug("Creating directory")
+            try:
+                makedirs(directory)
+            except Exception as error:
+                Error("Unable to create the directory: %s\n%s" % (directory, error))
+        elif not ospath.isdir(directory):
+            Error("Path exists, but it's not a directory: %s" % directory)
+
+        # Create logrotate file
+        with open(self.rotate_config.name, "w") as rfile:
+            rfile.write("\"%s\" {\n" % self.file_name)
+            if "el6" not in release():
+                rfile.write("   su root root\n")
+            if self.max_size > 0:
+                rfile.write("   maxsize %sM\n" % self.max_size)
+            rfile.write("   create 600 root root\n")
+            rfile.write("   rotate %s\n" % self.max_files)
+            rfile.write("   compress\n")
+            rfile.write("   dateext\n")
+            rfile.write("   dateformat -%s\n")
+            rfile.write("   }\n")
+
+    def rotate(self, force=False):
+        """ Calls the logrotate binary """
+        # pylint: disable=W0404, W0621, W0703
+
+        from os import system, path
+        from datetime import datetime
+        if force and path.exists(self.file_name):
+            system("logrotate -f %s" % self.rotate_config.name)
+        else:
+            module = int(datetime.now().strftime("%M")) % 10
+            if module == 0:
+                # Running the logrorate binary passing the configuration file
+                system("logrotate %s" % self.rotate_config.name)
+
+
+# noinspection PyShadowingNames,PyUnresolvedReferences
+class Parser(object):
+    """ Class to parse program arguments """
+    # pylint: disable=too-few-public-methods, E1101
+
+    def __init__(self):
+        """ Init definition """
+        self.__options = None
+        self.verbose = None
+        self.__parser = OptionParser(usage="%prog -a|-DIRSZ -p PID[,...]  "
+        "[ -h|--help] [ -v|--verbose] [ -b [ -t MINUTES ] [ -i SECONDS ] "
+        "[ -d DIRECTORY ] [ -m MAX_SIZE ] [ -n NUMBER_OF_FILES ] "
+        "[ -x MAX_SPACE ] ] [ -s NUMBER_OF_HUNG_PROCESSES ]",
+                                     description="kstack is used to capture the stack trace of a "
+                                                 "selected process or group of processes.",
+                                     formatter=TitledHelpFormatter())
+        self.__parse_options()
+        self.__print_debug()
+        self.__check_process_options()
+        self.__check_background()
+
+    ######################################################
+    def __add_options(self):
+        """ Adds the required options to the parser """
+
+        default_dir = "/var/oled/kstack"
+        process_group = OptionGroup(self.__parser, "SELECTION OPTIONS")
+        background_group = OptionGroup(self.__parser, "BACKGROUND OPTIONS")
+        log_group = OptionGroup(self.__parser, "LOG FILE OPTIONS")
+        extra_group = OptionGroup(self.__parser, "EXTRA OPTIONS")
+
+        self.__parser.add_option("-v",
+                                 "--verbose",
+                                 action="store_true",
+                                 dest="debug",
+                                 default=False,
+                                 help="Display debugging data.")
+
+        process_group.add_option("-a",
+                                 action="store_true",
+                                 dest="all",
+                                 default=False,
+                                 help="All processes.")
+
+        process_group.add_option("-D",
+                                 action="append_const",
+                                 dest="status",
+                                 const="D",
+                                 help="Processes waiting on I/O or a lock.")
+
+        process_group.add_option("-I",
+                                 action="append_const",
+                                 dest="status",
+                                 const="I",
+                                 help="Idle kernel threads.")
+
+        process_group.add_option("-R",
+                                 action="append_const",
+                                 dest="status",
+                                 const="R",
+                                 help="Running processes.")
+
+        process_group.add_option("-S",
+                                 action="append_const",
+                                 dest="status",
+                                 const="S",
+                                 help="Sleeping processes.")
+
+        process_group.add_option("-Z",
+                                 action="append_const",
+                                 dest="status",
+                                 const="Z",
+                                 help="Zombie processes.")
+
+        process_group.add_option("-p",
+                                 dest="pid",
+                                 type="str",
+                                 metavar="PID[,...]",
+                                 help="Dump stack traces for PID.  "
+                                      "More than one PID can be specified if separated by commas.")
+
+        background_group.add_option("-b",
+                                    action="store_true",
+                                    dest="background",
+                                    default=False,
+                                    help="Run in background mode.  "
+                                         "Data will be written to %s/kstack_HOSTNAME.out or "
+                                         "the directory selected on -d option." % default_dir)
+
+        # noinspection GrazieInspection
+        background_group.add_option("-t",
+                                    dest="minutes",
+                                    type="int",
+                                    default=30,
+                                    help="Specify the number of MINUTES to run "
+                                    "when in background mode.  Default is 30.")
+
+        background_group.add_option("-i",
+                                    dest="sleep",
+                                    metavar="SECONDS",
+                                    type="int",
+                                    default=60,
+                                    help="Specify the number of SECONDS between samples. "
+                                    "Default is 60.")
+
+        log_group.add_option("-d",
+                             dest="directory_name",
+                             metavar="DIRECTORY",
+                             type="str",
+                             default=default_dir,
+                             help="The target directory to write log files.  The default is "
+                                  "%s." % default_dir)
+
+        log_group.add_option("-m",
+                             dest="max_size",
+                             type="int",
+                             default=1,
+                             help="The maximum size, in megabytes, for the log file.  "
+                             "Once the log file exceeds this size it will be"
+                             "rotated and compressed.  Default value is 1Mb.")
+
+        log_group.add_option("-n",
+                             dest="files_number",
+                             metavar="NUMBER_OF_FILES",
+                             type="int",
+                             default=5,
+                             help="The number of rotated log files to retain. "
+                             "Default value is 5.")
+
+        log_group.add_option("-x",
+                             metavar="MAX_SPACE",
+                             dest="max_space",
+                             type="int",
+                             default=85,
+                             help="This is the maximum percent used on the target"
+                             "file system.  The default is 85(%). If the target"
+                             "file system is at or above this limit, then the program "
+                             "will refuse to run.")
+
+        extra_group.add_option("-s",
+                               dest="d_processes",
+                               metavar="NUMBER_OF_HUNG_PROCESSES",
+                               type="int",
+                               default=0,
+                               help="Alert to syslog if there are >= of these number of hung "
+                                    "processes present. The default is 0 (disabled).")
+
+        self.__parser.add_option_group(process_group)
+        self.__parser.add_option_group(background_group)
+        self.__parser.add_option_group(log_group)
+        self.__parser.add_option_group(extra_group)
+
+    ######################################################
+    def __parse_options(self):
+        """ Parses the command line options """
+        # pylint: disable=C0103, W0612, E1101
+
+        self.__add_options()
+        if not argv[1:]:
+            self.__parser.print_help()
+            sysexit(1)
+        self.__options, args = self.__parser.parse_args()
+        for name, value in self.__options.__dict__.items():
+            vars(self)[name] = value
+
+        if self.debug:
+            self.verbose = 1
+
+    def __check_process_options(self):
+        """ Checks if one of the options passed on the list is required """
+
+        if self.status is None and \
+                self.pid is None and \
+                not self.all:
+            Error("You must select one of the Process Options")
+
+    def __check_background(self):
+        """ Checks background options """
+
+        if self.background and self.sleep < 10:
+            Error("-i option can't be less than 10 seconds")
+
+    def __print_debug(self):
+        """ Print selected options """
+        # pylint: disable=redefined-outer-name
+
+        logging = Logging(self.verbose)
+
+        logging.debug("Program options:")
+        logging.debug("==============================")
+        for name, value in self.__options.__dict__.items():
+            logging.debug("Option: %-*s\tValue: %s" % (15, name, value))
+        logging.debug("==============================")
+
+
+# noinspection PyBroadException,PyUnresolvedReferences,
+class Kstack(object):
+    """ Dumps the stack for the required processes """
+    # pylint: disable=R0903, R1710
+
+    def __init__(self):
+        """ Init of class """
+        # pylint: disable=E1101
+
+        if options.pid:
+            self.pids = options.pid.split(",")
+        else:
+            self.pids = None
+
+    def get_stacks(self):
+        """
+        Identify which processes met the conditions
+        and get the stack.
+        Returns a dictionary with pids/status/cmdline
+        and dictionary with pid/stack
+        """
+        # pylint: disable=E1101
+
+        d_processes = 0
+        stacks = {}
+        # Gets a list of PIDs from the /proc directory
+        pids = [pid for pid in listdir('/proc') if pid.isdigit()]
+        for pid in pids:
+            # Reads the /proc/<PID>/stat file
+            line = getline(ospath.join("/proc", pid, "stat"), 1)
+            if line:
+                # Get the status for the stat file
+                status = line.split()[2].replace("(", "").replace(")", "")
+                starttime = line.split()[21]
+
+                # Increases counter for processes in D status, and check if they are above the limit
+                if options.d_processes > 0 and "D" in status:
+                    d_processes += 1
+
+                # Compare if the PID meets the requirements passed on
+                # the parameters: all, specific status, or pids
+                if options.all is True or \
+                        (self.pids and pid in self.pids) or \
+                        (options.status and status in options.status):
+                    # Calls the function to read the /proc/<PID>/cmdline file
+                    cmdline = self.__get_cmdline(pid)
+                    # The above result can be empty, if yes will get the
+                    # the command from the stat file
+                    if cmdline is None:
+                        cmdline = line.split('(')[1].split(')')[0]
+
+                    # Saving all the data to a dictionary, PID is the key
+                    # calls the function to read the stack
+                    stack = self.__get_stack(pid)
+                    if stack is not None:
+                        stacks[pid] = [status, cmdline, stack, starttime]
+
+        if 0 < options.d_processes <= d_processes:
+            system("logger -t kstack 'Processes in D status: %s'" % d_processes)
+
+        return stacks
+
+    @staticmethod
+    def __get_stack(pid):
+        """ Returns the stack for a given process """
+        # pylint: disable=W0702, W0703
+
+        # Reads the file /proc/<PID>/stack
+        try:
+            with open(ospath.join("/proc", pid, "stack")) as stack:
+                return stack.read()
+        except Exception:
+            return None
+
+    @staticmethod
+    def __get_cmdline(pid):
+        """ Returns the stack for a given process """
+        # pylint: disable=W0702, C1801, W0703
+
+        # Reads the file /proc/<PID>/cmdline
+        cmdline = ""
+        try:
+            cmdline = getline(ospath.join("/proc", pid, "cmdline"), 1)
+        except Exception:
+            pass
+
+        if not len(cmdline):
+            cmdline = None
+
+        return cmdline
+
+
+# noinspection PyBroadException
+class Jiffies(object):
+    """ Class to convert jiffies to date """
+    # pylint: disable=W0703
+
+    def __init__(self):
+        self.hertz = int(sysconf(sysconf_names['SC_CLK_TCK']))
+        self.boot_time = None
+
+        try:
+            with open('/proc/stat') as stat_file:
+                for line in stat_file.readlines():
+                    if line.startswith('btime'):
+                        self.btime = int(line.split()[1])
+        except Exception:
+            Error("Unable to read boot time from /proc/stat")
+
+    def jiffie_to_date(self, jiffies):
+        """ Convert the jiffies to a date """
+
+        return datetime.strptime(ctime((int(jiffies) / self.hertz)
+                                       + self.btime), "%a %b %d %H:%M:%S %Y")
+
+    def date_from_seconds(self, seconds):
+        """ Calculates the date adding seconds to boot time """
+
+        return self.jiffie_to_date(0) + timedelta(seconds=(seconds/1000))
+
+
+def print_output(stacks):
+    """ Writes the output to stdout or file """
+    # pylint: disable=E1101, W0603
+    global FILENAME
+
+    # Look for stack duplicates
+    duplicates = {}
+    jiffies = Jiffies()
+    for pid, stack in stacks.items():
+        if stack[2] in duplicates.keys():
+            duplicates[stack[2]].append(pid)
+        else:
+            duplicates[stack[2]] = [pid]
+
+    txt = "PID: {pid:>5s}   " \
+          "Status: {status:>2s}   " \
+          "Start Time: {start:%m/%d/%Y %H:%M:%S}   " \
+          "Cmd: {cmd}\n" \
+          "Stack:\n{" \
+          "stack}\n"
+
+    date_time = strftime("%a %b %d %H:%M:%S %Z %Y", localtime())
+    date = "zzz <%s> - %s\n" % (date_time, gethostname())
+
+    if options.background:
+        check_space()
+
+        try:
+            with open(FILENAME, 'a') as output:
+                output.write(date)
+
+                for stack, spids in duplicates.items():
+                    for pid in spids:
+                        output.write(txt.format(
+                            pid=pid,
+                            status=stacks[pid][0],
+                            start=jiffies.jiffie_to_date(stacks[pid][3]),
+                            cmd=stacks[pid][1].replace("\0", " ").strip(),
+                            stack=stack))
+
+        except Exception as error:
+            raise Error("Unable to write to file: %s\n%s" % (FILENAME, error))
+
+    else:
+        print(date)
+        for stack, spids in duplicates.items():
+            for pid in spids:
+                print(txt.format(
+                    pid=pid,
+                    status=stacks[pid][0],
+                    start=jiffies.jiffie_to_date(stacks[pid][3]),
+                    cmd=stacks[pid][1].replace("\0", " ").strip(),
+                    stack=stack))
+
+
+def run_background():
+    """ Runs the process in background """
+    # pylint: disable=W0612, E1101
+
+    # For is not 0 for the current parent process
+    if fork() != 0:
+        return
+
+    # Creates a lock file to avoid another process to run
+
+    # noinspection PyUnusedLocal
+    lock = FileLock()
+
+    # Setting the time/date to finish the run
+    limit = datetime.now() + timedelta(minutes=options.minutes)
+    logging.info("This script will run up to: %s" % limit)
+    limit += timedelta(seconds=15)
+
+    # Running data collection up to the limit, will create a new
+    # file every hour for to store the data.
+    logging.info("The requested data will be written to the directory: %s" % options.directory_name)
+
+    while datetime.now() < limit:
+        print_output(kstack.get_stacks())
+        sleep(options.sleep)
+        if options.background:
+            logrotate.rotate()
+
+
+def check_uid():
+    """ Check if the script is run as root """
+    if geteuid() != 0:
+        raise Error("This script must be run as root")
+
+
+def check_space():
+    """ Check if the log directory fs has available space """
+    # pylint: disable=E1101
+
+    def used(path):
+        """ Checks the disk space usage on filesystem """
+
+        cmd = Cmd()
+        command = "/usr/bin/df -Ph %s" % path
+        position = None
+        try:
+            cmd.run(command)
+        except OSError:
+            command = "/bin/df -Ph %s" % path
+            try:
+                cmd.run(command)
+            except Exception as error:
+                raise Error("Unable to check disk usage: %s" % error)
+
+        if cmd.code != 0:
+            raise Error("Unable to check disk usage: %s" % cmd.error)
+
+        for line in cmd.out.splitlines():
+            if "Use" in line:
+                position = line.split().index("Use%")
+                continue
+            return int(line.split()[position].replace("%", ""))
+
+    if options.background:
+        logging.trace("Checking free space on filesystem")
+        if ospath.exists(options.directory_name):
+            used_space = used(options.directory_name)
+            logging.trace("Used: %s, Threshold: %s" % (used_space, options.max_space))
+            if used_space >= options.max_space:
+                Error("Maximum filesystem space reached. Used: %s, "
+                      "Threshold: %s" % (used_space, options.max_space))
+        else:
+            Error("Path doesn't exist, unable to get filesystem usage: %s" % options.directory_name)
+
+
+# noinspection PyUnusedLocal
+def main():
+    """ Main definition for kstack """
+    # pylint: disable=E1101, W0612
+
+    # If the process will run in background we will create
+    # a child process, the child will run on background and
+    # the current process will exit
+    if options.background:
+        check_space()
+        child = Process(target=run_background)
+        child.start()
+        child.join()
+    else:
+        lock = FileLock()
+        print_output(kstack.get_stacks())
+
+    return 0
+
+
+if __name__ == '__main__':
+    # pylint: disable=C0103, E1101
+
+    # Check if the user is root
+    check_uid()
+    options = Parser()
+    logging = Logging()
+    FILENAME = ospath.realpath(ospath.join(
+        options.directory_name,
+        "kstack_%s.out" % gethostname()))
+    if options.background:
+        logrotate = LogRotate(FILENAME, options.max_size, options.files_number)
+    kstack = Kstack()
+    sysexit(main())

@@ -1,0 +1,103 @@
+.TH KSTACK 8
+.SH NAME
+kstack \- Collect the kernel stack trace for selected processes.
+.SH SYNOPSIS
+\fB kstack\fR
+\fB-a\fR|\fB-DIRSZ -p\fI PID\fR[,...]
+[ \fB\-h\fR|\fB--help\fR]
+[ \fB\-v\fR|\fB--verbose\fR]
+[ \fB-b\fR
+[ \fB\-t \fIMINUTES \fR]
+[ \fB\-i \fISECONDS \fR]
+[ \fB\-d \fIDIRECTORY \fR]
+[ \fB\-m \fIMAX_SIZE \fR]
+[ \fB\-n \fINUMBER_OF_FILES \fR]
+[ \fB\-x \fIMAX_SPACE \fR] ]
+[ \fB\-s \fINUMBER_OF_HUNG_PROCESSES \fR]
+.SH DESCRIPTION
+\fBkstack\fR is used to capture the kernel stack trace of a selected process or group of processes.  \fBkstack\fR first captures all needed data from the /proc file system and then parses the data based on the selection criteria.  The data is grouped by stack, so that duplicate stacks are not printed, and processes that share a stack are displayed together.  All of the \fBSELECTION OPTIONS\fR, with the exception of \fB-a\fR, can be combined. See \fBEXAMPLES\fR below.
+
+\fBkstack\fR can be run in foreground or background mode.  In foreground mode, the default, a single sample will be displayed to stdout.  In background mode, \fB-b\fR, the tool will run for a specified amount of time and gather the kernel stacks at regular intervals.  The data will be written to files in /var/oled/kstack.  The \fB-d\fR argument can be used to redirect the files to a different location.  The log files written in background mode can be further controlled using using the \fB-m\fR, \fB-n\fR, and \fB-x\fR options.
+
+Because most of the time it will be processes in D state that we are interested in, \fBkstack\fR has an option to print a warning to syslog if a certain number of D state processes are exceeded.  The \fB-s\fR option will specify the number of D state processes to trigger on.  If you specify \fB-s\fR 500, then if there are 500 or more processes waiting on I/O or a lock, a warning will be sent to syslog.
+.SH SELECTION OPTIONS
+.TP
+\fB\-a\fR
+All processes.
+.TP
+\fB\-D\fR
+Processes waiting on I/O or a lock.
+.TP
+\fB\-I\fR
+Idle kernel threads.
+.TP
+\fB\-R\fR
+Running processes.
+.TP
+\fB\-S\fR
+Sleeping processes.
+.TP
+\fB\-Z\fR
+Zombie processes.
+.TP
+\fB\-p\fI PID\fR[,...]
+Dump stack traces for \fIPID\fR.  More than one \fIPID\fR can be specified if separated by commas.
+.SH MISC OPTIONS
+.TP
+\fB\-h\fR,\fB--help\fr
+Display help information.
+.TP
+\fB\-v\fR,\fB--verbose\fr
+Display debugging data.
+.SH BACKGROUND OPTIONS
+.TP
+\fB\-b\fR
+Run in background mode.
+.TP
+\fB\-t \fIMINUTES\fR
+Specify the number of \fIMINUTES\fR to run when in background mode.  Default is 30.
+.TP
+\fB\-i \fISECONDS\fR
+Specify the number of \fISECONDS\fR between samples. Default is 60.
+.SH LOG FILE OPTIONS
+.TP
+\fB\-d \fIDIRECTORY\fR
+The target directory to write log files.  The default is /var/oled/kstack.
+.TP
+\fB\-m \fIMAX_SIZE\fR
+The maximum size, in megabytes, for the log file.  Once the log file exceeds this size it will be rotated and compressed.  Default value is 1Mb.
+.TP
+\fB\-n \fIFILES_NUMBER\fR
+The number of rotated log files to retain. Default value is 5.
+.TP
+\fB\-x \fIMAX_SPACE\fR
+This is the maximum percent used on the target file system.  The default is 85(%).  If the target file system is at or above this limit, then the program will refuse to run.
+.SH EXTRA OPTIONS
+.TP
+\fB\-s \fINUMBER_OF_PROCESSES\fR
+The max number D state processes to alert on.  The default is 0 (disabled).
+.SH ASSUMPTIONS
+\fBkstack\fR must be run by root.
+.SH EXAMPLES
+.TP
+To select all running processes:
+\fBkstack -R\fR
+.TP
+To select all running processes and all processes waiting on I/O:
+\fBkstack -RD\fR
+.TP
+To select all processes waiting on I/O and also processes 1234 and 1235:
+\fBkstack -Dp 1234,1235\fR
+.TP
+To select all processes waiting on I/O, every 30 seconds, for 30 minutes:
+\fBkstack -D -b -t 30 -i 30\fR
+.SH FILES
+.TP
+/var/oled/kstack
+Destination directory for log files when in background mode.
+.SH REPORTING BUGS
+.TP
+Please contact Oracle Linux Support to report any bugs for OLED tools.
+.SH SEE ALSO
+.TP
+oled topstack
