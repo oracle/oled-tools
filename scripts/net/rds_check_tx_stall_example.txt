@@ -1,0 +1,27 @@
+Purpose: This script monitors the completions on all the connections and
+calculates the time difference between the consecutive completions. If this
+time difference exceeds the threshold time (in microseconds), given as
+input argument, message will be printed providing the details of the
+connection parameters.
+
+Arguments: Threshold time in microseconds.  (Minimum: 500)
+
+Output format: [<src-ip, <dst-ip>, <tos>] last send completion: <time observed> usecs ago 
+
+Sample output: Shown below.
+
+Test 1:
+
+./rds_check_tx_stall.d 200
+ Error: Argument should be >= 500 ( microseconds) [2022 Oct 31 13:39:24]
+
+Test 2:
+
+./rds_check_tx_stall.d 1000000
+2022 Oct 31 13:37:16 Print each time there is a gap that exceeds the threshold, ctrl+c to stop.
+[192.168.18.5,192.168.18.8,2] last send completion: 1000211 usecs ago
+[192.168.18.5,192.168.18.8,3] last send completion: 1000359 usecs ago
+[192.168.18.5,192.168.18.8,3] last send completion: 1000233 usecs ago
+[192.168.18.5,192.168.18.8,3] last send completion: 1000153 usecs ago
+^C
+
