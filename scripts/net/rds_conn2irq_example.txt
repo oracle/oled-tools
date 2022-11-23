@@ -1,0 +1,22 @@
+Purpose: Display rds connection and its related qpn, cqn and ird lines
+
+Arguments: None
+
+Output format: [<src-ip>, <dst-ip>, <tos>] conn=<rds_connection object>
+ic=<rds_ib_connection object> qpn=<source qp number> dqpn=<destination qp
+number> scqn=<source completion queue number> scqirq=<source completion queue
+irq number> rcqn=<receive completion queue number> rcqirq=<receive completion
+queue irq number>
+
+Note: This scripts works only on CX-5/RoCE based machine
+
+Sample output: Shown below.
+
+# ./rds_conn2irq.d
+2022 Sep  1 03:26:05 print rds conn to irq mapping. Run rds-info -I parallelly to populate. ctrl+c to stop and print summary
+
+[<192.168.100.125,192.168.100.63,0>] conn=ffff8d93e96e8148 ic=ffff8d35fa43c000 qpn=156 dqpn=0 scqn=1210 scqirq=546 rcqn=1211 rcqirq=545
+^C
+Summary:
+        irqn    count
+         545        1
