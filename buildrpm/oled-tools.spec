@@ -17,7 +17,7 @@ Source0:	%{name}-%{version}.tar.gz
 %description
 oled-tools is a collection of command line tools, scripts, config files, etc.,
 that will aid in faster and better debugging of problems on Oracle Linux. It
-contains: lkce, memstate, kstack, filecache and dentrycache.
+contains: lkce, memstate, kstack, filecache, dentrycache and syswatch.
 
 # avoid OL8 build error. We have to fix this eventually
 %if 0%{?el8}
@@ -149,6 +149,10 @@ rm -rf $RPM_BUILD_ROOT
 %{scripts_docs_d}/rds_rdma_xfer_rate_example.txt
 %{scripts_d}/rds_tx_funccount.d
 %{scripts_docs_d}/rds_tx_funccount_example.txt
+
+#syswatch
+%{oled_d}/syswatch
+%{_mandir}/man8/oled-syswatch.8.gz
 
 %changelog
 * Wed Jul 07 2021 Manjunath Patil <manjunath.b.patil@oracle.com> [0.5]

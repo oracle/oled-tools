@@ -34,6 +34,7 @@ BINDIR="/usr/lib/oled-tools"
 LKCE = BINDIR + "/lkce"
 MEMSTATE = BINDIR + "/memstate"
 KSTACK = BINDIR + "/kstack"
+SYSWATCH = BINDIR + "/syswatch"
 # for uek4
 FILECACHE_UEK4 = BINDIR + "/filecache_uek4"
 DENTRYCACHE_UEK4 = BINDIR + "/dentrycache_uek4"
@@ -69,6 +70,7 @@ def help(error):
     print("     filecache       -- List the biggest files in page cache")
     print("     dentrycache     -- List a sample of active dentries")
     print("     kstack          -- Gather kernel stack based on the process status or PID")
+    print("     syswatch        -- Execute user-provided commands based on the CPU utilization")
     print("     help            -- Show this help message")
     print("     version         -- Print version information")
 
@@ -142,6 +144,10 @@ def cmd_kstack(args):
     ret = os.system(cmdline)
     return ret
 
+def cmd_syswatch(args):
+    cmdline = SYSWATCH + " " + " ".join(args)
+    return os.system(cmdline)
+
 def cmd_help(args):
     help(False)
 
@@ -168,6 +174,9 @@ def main():
         sys.exit(ret)
     elif cmd == "kstack":
         ret = cmd_kstack(args)
+        sys.exit(ret)
+    elif cmd == "syswatch":
+        ret = cmd_syswatch(args)
         sys.exit(ret)
     elif cmd == "version" or cmd == "--version":
         ret = cmd_version()

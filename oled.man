@@ -24,6 +24,7 @@ Valid sub-commands:
      filecache       -- List the biggest files in page cache
      dentrycache     -- List a sample of active dentries
      kstack          -- Gather kernel stack based on the process status or PID
+     syswatch        -- Execute user-provided commands based on the CPU utilization
      help            -- Show this help message
      version         -- Print version information
 
