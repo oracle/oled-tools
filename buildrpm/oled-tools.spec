@@ -51,6 +51,8 @@ make install DESTDIR=$RPM_BUILD_ROOT DIST=%{?dist} SPECFILE="1"
 %endif
 %define lkce_d %{oled_etc_d}/lkce
 %define lkce_kdump_d %{lkce_d}/lkce_kdump.d
+%define scripts_d %{oled_d}/scripts
+%define scripts_docs_d %{oled_d}/scripts/docs
 
 %post
 [ -f %{lkce_d}/lkce.conf ] || oled lkce configure --default > /dev/null
@@ -129,6 +131,24 @@ rm -rf $RPM_BUILD_ROOT
 #kstack
 %{oled_d}/kstack
 %{_mandir}/man8/oled-kstack.8.gz
+
+#scripts
+%{scripts_d}/arp_origin.d
+%{scripts_docs_d}/arp_origin_example.txt
+%{scripts_d}/rds_bcopy_metric.d
+%{scripts_docs_d}/rds_bcopy_metric_example.txt
+%{scripts_d}/rds_check_tx_stall.d
+%{scripts_docs_d}/rds_check_tx_stall_example.txt
+%{scripts_d}/rds_conn2irq.d
+%{scripts_docs_d}/rds_conn2irq_example.txt
+%{scripts_d}/rds_egress_TP.d
+%{scripts_docs_d}/rds_egress_TP_example.txt
+%{scripts_d}/rds_rdma_lat.d
+%{scripts_docs_d}/rds_rdma_lat_example.txt
+%{scripts_d}/rds_rdma_xfer_rate.d
+%{scripts_docs_d}/rds_rdma_xfer_rate_example.txt
+%{scripts_d}/rds_tx_funccount.d
+%{scripts_docs_d}/rds_tx_funccount_example.txt
 
 %changelog
 * Wed Jul 07 2021 Manjunath Patil <manjunath.b.patil@oracle.com> [0.5]

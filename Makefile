@@ -26,6 +26,7 @@ export SPECFILE
 export DESTDIR
 
 subdirs := tools/lkce tools/kcore-utils tools/memstate tools/kstack
+subdirs := $(subdirs) scripts
 rev_subdirs := $(shell echo -n "$(subdirs) " | tac -s ' ')
 OLEDDIR := $(DESTDIR)/etc/oled
 SBINDIR := $(DESTDIR)/usr/sbin
@@ -74,6 +75,7 @@ rpm:
 	cp -R tools/kcore-utils oled-tools/tools
 	cp -R tools/memstate oled-tools/tools
 	cp -R tools/kstack oled-tools/tools
+	cp -R scripts oled-tools
 	mv oled-tools oled-tools-$(VERSION)
 	tar --xform 's/eppic_scripts/e_s/g' -chozf oled-tools-$(VERSION).tar.gz oled-tools-$(VERSION)
 	#rpmbuild
