@@ -31,6 +31,7 @@ install:
 	@echo "install:$(CURDIR)"
 	mkdir -p $(SCRIPTSDIR)
 	mkdir -p $(DOCSDIR)
+#net
 	install -m 755 $(CURDIR)/net/arp_origin.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/net/arp_origin_example.txt $(DOCSDIR)
 	install -m 755 $(CURDIR)/net/rds_bcopy_metric.d $(SCRIPTSDIR)
@@ -49,6 +50,9 @@ install:
 	install -m 755 $(CURDIR)/net/rds_tx_funccount_example.txt $(DOCSDIR)
 	install -m 755 $(CURDIR)/net/ping_lat.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/net/ping_lat_example.txt $(DOCSDIR)
+#core
+	install -m 755 $(CURDIR)/core/spinlock_time.d $(SCRIPTSDIR)
+	install -m 755 $(CURDIR)/core/spinlock_time_example.txt $(DOCSDIR)
 	@echo "scripts successfully installed"
 
 uninstall:

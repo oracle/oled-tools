@@ -1,0 +1,42 @@
+Purpose: Track 'the time interrupt is disabled' due to spin_lock_irq*()
+kernel functions. Takes an argument[holdtime in ms] and prints the process
+(and its call stack) which disables interrupt more than the given time.
+
+Argument: Time in ms (Minimum value is 2)
+
+Output format:
+	 <current_time> time=<val> ms lock=<val> pid=<val> cpu=<val> cmd=<val>
+         followed by stack dump
+
+Sample output: Shown below.
+
+# ./spinlock_time.d 1
+Error: Argument should be >= 2 ( millisec) [2023 Jan 18 10:15:38]
+
+
+# ./spinlock_time.d 2
+Processes holding spinlock_irq longer than 2 ms [2023 Jan 18 10:21:28]
+----------------------------------------------------------------------
+
+[2023 Jan 18 10:21:32] time=2 ms lock=ffffc41bff5083a0 pid=28352 cpu=39 cmd=osysmond.bin
+
+              vmlinux`do_invalid_op+0x20
+              vmlinux`invalid_op+0x11a
+              vmlinux`_raw_spin_unlock_irqrestore+0x14
+              iova`fq_flush_timeout+0x66
+              vmlinux`call_timer_fn+0x3c
+              vmlinux`run_timer_softirq+0x209
+              vmlinux`__do_softirq+0xe1
+              vmlinux`irq_exit+0xf6
+              vmlinux`smp_apic_timer_interrupt+0x91
+              vmlinux`apic_timer_interrupt+0x1c6
+              vmlinux`__raw_spin_unlock+0x10
+              vmlinux`dput+0xc9
+              vmlinux`proc_fill_cache+0x81
+              vmlinux`proc_readfd_common+0xe8
+              vmlinux`proc_readfd+0x15
+              vmlinux`iterate_dir+0x98
+              vmlinux`SyS_getdents+0x98
+              vmlinux`do_syscall_64+0x79
+              vmlinux`entry_SYSCALL_64+0x191
+
