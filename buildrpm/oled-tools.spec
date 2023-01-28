@@ -149,6 +149,8 @@ rm -rf $RPM_BUILD_ROOT
 %{scripts_docs_d}/rds_rdma_xfer_rate_example.txt
 %{scripts_d}/rds_tx_funccount.d
 %{scripts_docs_d}/rds_tx_funccount_example.txt
+%{scripts_d}/ping_lat.d
+%{scripts_docs_d}/ping_lat_example.txt
 
 #syswatch
 %{oled_d}/syswatch

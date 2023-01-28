@@ -47,6 +47,8 @@ install:
 	install -m 755 $(CURDIR)/net/rds_rdma_xfer_rate_example.txt $(DOCSDIR)
 	install -m 755 $(CURDIR)/net/rds_tx_funccount.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/net/rds_tx_funccount_example.txt $(DOCSDIR)
+	install -m 755 $(CURDIR)/net/ping_lat.d $(SCRIPTSDIR)
+	install -m 755 $(CURDIR)/net/ping_lat_example.txt $(DOCSDIR)
 	@echo "scripts successfully installed"
 
 uninstall:
