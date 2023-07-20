@@ -63,9 +63,8 @@ class Hugepages(Base):
         """Get total amount of memory in hugepages in GBs."""
         self.__read_nr_hugepages()
         hp_nr_total_kb = 0
-        for key in self.hp_nr_dict:
+        for key, val in self.hp_nr_dict.items():
             (hp_size, _) = key.split("_")
-            val = self.hp_nr_dict[key]
             hp_nr_total_kb = \
                 hp_nr_total_kb + round(float(val * int(hp_size)), 1)
         return round(self.convert_kb_to_gb(hp_nr_total_kb), 1)

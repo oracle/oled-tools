@@ -79,7 +79,7 @@ class Slabinfo(Base):
         slab_caches_sorted = {}
         for line in self.data.splitlines():
             if len(line.split()) != 16:
-                continue  # TODO use a better technique to find valid lines?
+                continue
             c_name = self.__slabinfo_get_name(line)
             c_num_slabs = self.__slabinfo_get_num_slabs(line)
             c_pages_per_slab = self.__slabinfo_get_pages_per_slab(line)

@@ -119,9 +119,9 @@ class Meminfo(Base):
 
     def __print_hugepages_summary(self):
         hp_nr = self.hugepages.get_nr_hugepages_matrix_kb()
-        for key in hp_nr:
+        for key, val in hp_nr.items():
             hp_nr_total = 0
-            for i in hp_nr[key]:
+            for i in val:
                 hp_nr_total = hp_nr_total + int(i)
             if hp_nr_total:
                 self.print_pretty_gb_l1(

@@ -55,7 +55,9 @@ class Logfile(Base):
                 print(msg)
                 sys.exit(1)
 
-            self.log = open(constants.LOGFILE, "a")
+            # pylint: disable-next=consider-using-with
+            self.log = open(constants.LOGFILE, "a", encoding="utf8")
+
             msg = (
                 f"Capturing memstate data every {interval} seconds, in log: "
                 f"{constants.LOGFILE}")
@@ -75,7 +77,7 @@ class Logfile(Base):
     @staticmethod
     def setup_logrotate():
         """Setup logrotate(8) configuration."""
-        with open(constants.LOGROTATEFILE, "w") as conf_fd:
+        with open(constants.LOGROTATEFILE, "w", encoding="utf8") as conf_fd:
             conf_fd.write(
                 f"{constants.LOGFILE} {{\n"
                 "\trotate 20\n"

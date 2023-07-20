@@ -21,8 +21,11 @@
 # questions.
 """Common global constants used by memstate."""
 
-#### Global constants
-## Do not change these values!
+#
+# Begin: Global Constants
+#
+# Do not change these values!
+#
 PAGE_SIZE_KB = 4
 FRAG_SIZE_KB = 16
 STRUCT_PAGE_SIZE = 64
@@ -38,17 +41,26 @@ MAX_NUMA_NODES = 8
 BUDDYINFO_START_INDEX = 0
 LOW_ORDER_MAX_INDEX = 3
 HIGH_ORDER_MAX_INDEX = 10
-#### End: global constants
+#
+# End: Global Constants
+#
 
-#### Begin: config values
-## These values control how many lines of output are printed for different
-## categories. Change them if you want more/less output.
+#
+# Begin: Config Values
+#
+
+#
+# These values control how many lines of output are printed for different
+# categories. Change them if you want more/less output.
+#
 NUM_TOP_SLAB_CACHES = 10      # N biggest slab caches
 NUM_TOP_MEM_USERS = 10        # N top memory consumers (user processes)
 NUM_TOP_SWAP_USERS = 10       # N top users of swap space
 NUM_TOP_NUMA_MAPS = 20        # N biggest consumers of memory on each NUMA node
 
-## Thresholds for warnings
+#
+# Thresholds for warnings
+#
 # For instance, print a warning if X slab cache usage exceeds
 # SLAB_USE_PERCENT * (TotalRAM - TotalHugepages). These values are a bit
 # arbitrary, and represent what we think are "safe" thresholds for most
@@ -80,10 +92,11 @@ LOCK_FILE_DIR = "/run/lock/"
 LOCK_FILE_DIR_OL6 = "/var/run/"
 DEFAULT_INTERVAL = 30           # Unit: seconds
 
-
 # This is the max allowed "Use%" field in 'df -h' output for the logfile path;
 # the tool will exit if there's not enough space on disk.
 MAX_DISKSPACE_UTIL = 85
-
 MIN_DISKSPACE_NEEDED = 50       # Unit: MB
-#### End: config values
+
+#
+# End: config values
+#

@@ -30,7 +30,7 @@ import platform
 import socket
 import sys
 from datetime import datetime
-from typing import Optional
+from typing import Set, Optional
 
 from memstate_lib import constants
 
@@ -39,7 +39,7 @@ class Base:
     """ Contains general helper functions used by all other modules. """
     # pylint: disable=too-many-public-methods
 
-    logged_messages = set()
+    logged_messages: Set[str] = set()
     debug_log_configured = False
 
     def create_file_path(self, filename):
@@ -60,7 +60,7 @@ class Base:
         otherwise raise an exception.
         """
         try:
-            with open(path) as fdesc:
+            with open(path, "r", encoding="utf8") as fdesc:
                 return fdesc.read()
         except Exception as exn:
             self.log_debug(f"Unable to read file '{path}': {exn}")
@@ -78,14 +78,10 @@ class Base:
         output = ""
         try:
             args = cmd.split()
-            proc = subprocess.Popen(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                shell=False)  # nosec
-            (output, error) = proc.communicate()
-            output = output.decode('utf-8')
-            if error:
-                self.log_debug(
-                    f"Command '{cmd}' returned error: {error.decode('utf-8')}")
+            result = subprocess.run(
+                        args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        shell=False, check=True)  # nosec
+            output = result.stdout.decode('utf-8')
         except Exception as exn:  # pylint: disable=broad-except
             output = ""
             self.log_debug(f"Command '{cmd}' failed with error: {exn}")
@@ -214,7 +210,7 @@ class Base:
 
         If an OSError occurs, return an empty string instead."""
         try:
-            return open(filename, mode)
+            return open(filename, mode, encoding="utf8")
         except OSError:
             # Ignore if file does not exist
             return ""
@@ -252,9 +248,10 @@ class LockFile(Base):
     def __create_lock(self):
         """ Creates the directory and lock file """
         self.create_file_path(self.lock_filename)
-        self.lock_fd = open(self.lock_filename, "w")
 
         try:
+            # pylint: disable-next=consider-using-with
+            self.lock_fd = open(self.lock_filename, "w", encoding="utf8")
             # Exclusive lock | non-blocking request
             fcntl.flock(self.lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             self.locked = True

@@ -63,13 +63,13 @@ class Pss(Base):
                     continue
                 pid = smaps_file.split("/")[2]
                 data = ""
-                with open(smaps_file, 'r') as smaps_fd:
+                with open(smaps_file, "r", encoding="utf8") as smaps_fd:
                     data = smaps_fd.read()
                 num_files_scanned = num_files_scanned + 1
                 for line in data.splitlines():
                     if line.startswith("Pss:"):
                         segment_mem = line.split(":")[1].strip().split()[0]
-                        if pid in list(mem.keys()):
+                        if pid in mem:
                             mem[pid] = int(mem[pid]) + int(segment_mem)
                         else:
                             mem[pid] = int(segment_mem)

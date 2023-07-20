@@ -54,7 +54,7 @@ class Swap(Base):
             name_search_str = r'^Name:\s*.+'
             vmswap_search_str = r'^VmSwap:\s*[0-9]+'
             try:
-                with open(filestr, 'r') as status_fd:
+                with open(filestr, "r", encoding="utf8") as status_fd:
                     data = status_fd.read()
                     num_files_scanned = num_files_scanned + 1
                 name = re.search(name_search_str, data)

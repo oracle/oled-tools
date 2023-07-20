@@ -90,22 +90,22 @@ class Numa(Base):
         self.numa_maps += newline
 
     def __print_numa_headers(self):
-        print("{0: >41}".format("Node 0"), end=' ')
+        print(f"{'Node 0': >41}", end=' ')
         for i in range(1, self.num_numa_nodes):
-            print("{0: >15}".format("Node " + str(i)), end=' ')
+            print(f"{'Node' + str(i): >15}", end=' ')
         print("")
 
     def __print_numastat_headers(self):
-        print("{0: >48}".format("Node 0"), end=' ')
+        print(f"{'Node 0': >48}", end=' ')
         for i in range(1, self.num_numa_nodes):
-            print("{0: >17}".format("Node " + str(i)), end=' ')
+            print(f"{'Node'  + str(i): >17}", end=' ')
         print("")
 
     @staticmethod
     def __print_pretty_numastat_kb(str_msg, numa_arr_kb):
-        print("{0: <30}".format(str_msg + ": "), end=' ')
+        print(f"{str_msg + ': ': <30}", end=' ')
         for _, val in enumerate(numa_arr_kb):
-            print("{0: >14}".format(str(val)) + " KB", end=' ')
+            print(f"{str(val) + ' KB': >14}", end=' ')
         print("")
 
     def __check_numa_maps_bindings(self):
@@ -207,7 +207,7 @@ class Numa(Base):
             for pid_elem in per_pid_sorted:
                 if hdr_printed is False:
                     comm = pid_elem.split()[0]
-                    print("{0: <25}".format(comm), end=' ')
+                    print(f"{comm: <25}", end=' ')
                     hdr_printed = True
                     comm_ignore.append(comm)
                 value_kb = int(nlist_sorted[pid_elem]) * constants.PAGE_SIZE_KB
@@ -327,17 +327,17 @@ class Numa(Base):
 
     def __print_hugepage_stats_by_node(self):
         hp_nr = self.hugepages.get_nr_hugepages_matrix_kb()
-        for elem in hp_nr:
+        for hp_size, nr_kb in hp_nr.items():
             # If all elements in a list are 0s, ignore that list.
-            if not all(e == 0 for e in hp_nr[elem]):
+            if not all(e == 0 for e in nr_kb):
                 self.__print_pretty_numastat_kb(
-                    f"Total Hugepages ({elem} KB)", hp_nr[elem])
+                    f"Total Hugepages ({hp_size} KB)", nr_kb)
 
         hp_free = self.hugepages.get_free_hugepages_matrix_kb()
-        for elem in hp_free:
-            if not all(e == 0 for e in hp_free[elem]):
+        for hp_size, nr_kb in hp_free.items():
+            if not all(e == 0 for e in nr_kb):
                 self.__print_pretty_numastat_kb(
-                    f"Free Hugepages ({elem} KB)", hp_free[elem])
+                    f"Free Hugepages ({hp_size} KB)", nr_kb)
 
     def __display_numa_meminfo(self):
         """
