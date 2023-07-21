@@ -1,0 +1,210 @@
+
+=======================
+ makedumpfile's README
+=======================
+
+* REQUIREMENTS
+  Please download the following library file and install it exactly as below;
+  do NOT use "make install".
+  - elfutils-0.144.tar.gz
+    The "make install" of elfutils installs some commands (ld, readelf, etc.),
+    and compiling problems sometimes happen due to using the installed
+    commands. To install only the library & header files, use the following
+    method:
+     # tar -zxvf elfutils-0.144.tar.gz
+     # cd elfutils-0.144
+     # ./configure
+     # make
+     #
+     # mkdir /usr/local/include/elfutils/
+     # cp ./libdw/libdw.h   /usr/local/include/elfutils/libdw.h
+     # cp ./libdw/dwarf.h   /usr/local/include/dwarf.h
+     # cp ./libelf/libelf.h /usr/local/include/libelf.h
+     # cp ./libelf/gelf.h   /usr/local/include/gelf.h
+     #
+     # cp ./libelf/libelf.a /usr/local/lib/libelf.a
+     # cp ./libdw/libdw.a   /usr/local/lib/libdw.a
+     # cp ./libasm/libasm.a /usr/local/lib/libasm.a
+     # cp ./libebl/libebl.a /usr/local/lib/libebl.a
+     #
+
+* BUILD & INSTALL
+  1.Get the latest makedumpfile from the following site:
+    https://sourceforge.net/projects/makedumpfile/
+  2.Uncompress the tar file:
+    # tar -zxvf makedumpfile-x.y.z.tar.gz
+  3.Enter the makedumpfile subdirectory:
+    # cd makedumpfile-x.y.z
+  4.Build, and install:
+    # make; make install
+  5.Build for a different architecture than the host :
+    # make TARGET=<arch> ; make install
+    where <arch> is the 'uname -m' of the target architecture. 
+    The user has to set the environment variable CC to appropriate
+    compiler for the target architecture.
+  6.Build with lzo support:
+    # make USELZO=on ; make install
+    The user has to prepare lzo library.
+  7.Build with snappy support:
+    # make USESNAPPY=on ; make install
+    The user has to prepare snappy library.
+  8.Build the extension module for --eppic option.
+    # make eppic_makedumpfile.so
+    The user has to prepare eppic library from the following site:
+    http://code.google.com/p/eppic/
+
+* SUPPORTED KERNELS
+  This makedumpfile supports the following kernels.
+
+         |       FLATMEM     |   DISCONTIGMEM    |       SPARSEMEM       
+         |-------------------+-------------------+------------------------
+   Kernel|    | x86| PPC| PPC|    | x86|    | PPC|    | x86|    | PPC|
+  Version| x86| _64|  32|  64| x86| _64|ia64|  64| x86| _64|ia64|  64|s390
+  -------+----+----+----+----+----+----+----+----+----+----+----+----+----
+  2.6.15 | OK | -- |    | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+  2.6.16 | OK | OK |    |    | -- | OK | OK | -- | -- |    | -- |    |
+  2.6.17 | OK | OK |    |    | -- | OK | -- | -- | -- | OK | -- |    |
+  2.6.18 | OK | OK |    | OK | -- | OK | OK | -- | -- | OK | OK | OK |
+  2.6.19 | OK | OK |    | OK | OK | OK |    | -- | OK | OK | OK | OK |
+  2.6.20 | OK | OK |    | #1 | OK | OK | OK | -- | OK | OK | OK | #1 |
+  21-rc5 | OK | OK |    | OK | OK | OK | OK | -- | OK | OK | OK | OK |
+  2.6.21 | OK | OK |    |    | OK | OK | OK | -- | OK | OK | OK |    |
+  2.6.22 | OK | OK |    |    | OK | OK | OK | -- | OK | OK | OK |    |
+  2.6.23 | OK | OK |    |    | OK | OK | OK | -- | OK | OK | OK |    |
+  2.6.24 | OK | OK |    |    | OK | OK | OK | -- | OK | OK | OK |    |
+  2.6.25 | OK | ** |    |    |    | ** | OK | -- | OK | OK | OK |    |
+  2.6.26 | OK | ** |    |    |    | ** | OK | -- | OK | OK | OK |    |
+  2.6.27 | OK | ** |    |    |    | ** | OK | -- | #2 | OK | OK |    |
+  2.6.28 | OK | ** |    |    |    | ** | OK | -- | OK | OK | OK |    |
+  2.6.29 | OK | ** |    |    |    | ** | OK | -- | OK | OK | OK |    |
+  2.6.30 | OK | ** |    |    |    | ** | OK | -- | OK | OK | OK |    |
+  2.6.31 | OK | ** |    |    |    | ** |    | -- | OK | OK | OK |    |
+  2.6.32 | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    | OK
+  2.6.33 | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  2.6.34 | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  2.6.35 | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  2.6.36 | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  2.6.37 | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  2.6.38 | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  2.6.39 | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.0    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.1    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.2    | OK | ** | OK |    |    | ** |    | -- | OK | OK |    |    |
+  3.3    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.4    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.5    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.6    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.7    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.8    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.9    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.10   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.11   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.12   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.13   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.14   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.15   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.16   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.17   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.18   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  3.19   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.0    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.1    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.2    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.3    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.4    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.5    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.6    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.7    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.8    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.9    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.10   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.11   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.12   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.13   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.14   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.15   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.16   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.17   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.18   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.19   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  4.20   | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  5.0    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  5.1    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+  5.2    |    | ** |    |    |    | ** |    | -- |    | OK |    |    |
+  5.3    |    | ** |    |    |    | ** |    | -- |    | OK |    |    |
+  5.4    | OK | ** |    |    |    | ** |    | -- | OK | OK |    |    |
+
+  OK    : Support.
+  --    : Not support.
+  Empty : Not test yet.
+  TODO  : TODO.
+  #1    : Both kexec/kdump does not work with PPC64 2.6.20 kernels. 
+          This is a known problem fixed with later kernels.
+  #2    : kdump does not work with i386 sparsemem 2.6.27 kernels. 
+          This is a known problem fixed with later kernels.
+  **    : The deleted memory model.
+          On x86_64, both FLATMEM and DISCONTIGMEM have been deleted since
+          linux-2.6.25.
+
+* USAGE
+  Please see "man makedumpfile" or "makedumpfile -h".
+
+* TODO
+  1. Supporting more kernels.
+  2. Fixing the report message.
+     - Now, it sometimes counts the number of free_pages duplicating zero-pages
+       if creating an ELF dumpfile.
+     - The cyclic mode will show incorrect and many progress indicator.
+
+* NOTE
+  1. A vmcoreinfo file should be generated by the makedumpfile which is used
+     for dump filtering. If installing the latest makedumpfile, the vmcoreinfo
+     file should be regenerated by it. Actually, makedumpfile v1.2.0 or later
+     cannot work by vmcoreinfo file which is generated by v1.1.9 or before.
+
+  2. If using linux-2.6.24 and kexec-tools-testing-20061214, /proc/vmcore
+     contains vmcoreinfo data. So it is possible to create a dumpfile without
+     -x option (or -i option) like the following:
+     # makedumpfile -d 31 /proc/vmcore dumpfile
+
+  3. On makedumpfile-1.2.5 or before, both '--xen-syms' and '--xen-vmcoreinfo'
+     excluded Xen user domain pages. Since makedumpfile-1.2.6, '-X' option
+     have been added for excluding Xen user domain pages, and these options
+     does not exclude Xen user domain pages. So user should specify '-X'
+     option for excluding Xen user domain pages.
+
+* FAQ
+  001: If installing elfutils-0.137 into older elfutils by the above way, the
+       following problem happens sometimes. If seeing, try to enable LDFLAGS
+       comment (-L/usr/local/lib -I/usr/local/include) in Makefile.
+
+       $ make
+       [..]
+       /tmp/ccXQtvnZ.o: In function `process_module':
+       /makedumpfile/makedumpfile.c:1387: undefined reference to `dwarf_getelf'
+       collect2: ld returned 1 exit status
+       make: *** [makedumpfile] Error 1
+
+  002: makedumpfile is compiled with -static option, because the command should
+       run while the second kernel, which may not mount root filesystem and may
+       not contain dynamic library files, is running.
+       If the dynamic library files, which are needed by makedumpfile, exist
+       while the second kernel is running, we can use dynamic libraries by 
+       "LINKTYPE" parameter. 
+
+       $ make LINKTYPE=dynamic
+
+       This is a workaround for some linux distributions which does
+       not contain static library files needed by makedumpfile.
+
+
+* REFERENCES
+  https://sourceforge.net/projects/makedumpfile/
+  http://lists.infradead.org/pipermail/kexec/
+  https://lists.linux-foundation.org/pipermail/fastboot/
+
+* BUG REPORT
+  If finding some bugs, please send the information to the following:
+  Kazuhito Hagio <k-hagio-ab@nec.com>
+  kexec-ml <kexec@lists.infradead.org>
+

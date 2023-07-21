@@ -1,0 +1,2 @@
+makedumpfile doesn't have back compatibility when accessing /proc/kcore,
+user v1.5.7 for UEK4 kernels and v1.6.7 for UEK5 or higher kernels.

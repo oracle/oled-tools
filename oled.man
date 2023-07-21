@@ -1,0 +1,60 @@
+.TH OLED 8 "Nov 2022" "Oracle Linux Enhanced Diagnostics" "0.5"
+
+.SH NAME
+oled - Interface to invoke other diagnostic tools
+
+.SH SYNOPSIS
+oled [-h | --help | -v | --version] [sub_command] [options]
+
+.SH DESCRIPTION
+OLED (Oracle Linux Enhanced Diagnostics) is a collection of diagnostic tools
+and scripts. The \fBoled\fR command is used to invoke these other tools/scripts.
+See usage below, for available options.
+
+.TP
+# oled --help
+usage: oled {-h | -v | COMMAND [ARGS]}
+
+Valid commands:
+     lkce        -- Linux Kernel Core Extractor
+     memstate    -- Capture and analyze memory usage statistics
+     filecache   -- List the biggest files in page cache
+     dentrycache -- List a sample of active dentries
+     kstack      -- Gather kernel stack based on the process status or PID
+     syswatch    -- Execute user-provided commands based on the CPU utilization
+
+optional arguments:
+  -h, --help     show this help message and exit
+  -v, --version  show program's version number and exit
+
+NOTE: Must run as root.
+
+Please check the man page of each sub-command to learn more about that tool and
+its usage.
+
+.SH EXAMPLES
+.TP
+
+# oled memstate -h
+usage: oled memstate [-h] [-p] [-w] [-s [FILE]] [-n [FILE]] [-a] [-v]
+                     [-f [INTERVAL]]
+
+memstate: Capture and analyze memory usage data on this system.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p, --pss             display per-process memory usage
+  -w, --swap            display per-process swap usage
+  -s [FILE], --slab [FILE]
+                        analyze/display slab usage
+  -n [FILE], --numa [FILE]
+                        analyze/display NUMA stats
+  -a, --all             display all data
+  -v, --verbose         verbose data capture; combine with other options
+  -f [INTERVAL], --frequency [INTERVAL]
+                        interval at which data should be collected (default:
+                        30s)
+
+.SH REPORTING BUGS
+.TP
+Please contact Oracle Linux Support to report any bugs for OLED tools.

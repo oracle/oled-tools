@@ -1,0 +1,75 @@
+Purpose: The script shows the rdma transfer rate[MB/s] for each rds connection.
+It also shows histograms of inverse bandwidth in nsecs/KB [Avg number of nsecs
+to transfer 1KB of data].
+
+Arguments: None
+
+Output format: [src-ip, dst-ip, tos, <r/w>] <Data transfer rate in MB/s>
+
+Sample output: Shown below.
+# ./rds_rdma_xfer_rate.d
+2022 Oct 25 10:25:17
+[<connection> op]                        MB/s
+2022 Oct 25 10:25:27
+[<192.168.100.125,192.168.100.124,0> r] 1059
+2022 Oct 25 10:25:37
+[<192.168.100.125,192.168.100.124,0> r] 1059
+2022 Oct 25 10:25:47
+[<192.168.100.125,192.168.100.124,0> r] 1056
+2022 Oct 25 10:25:57
+[<192.168.100.125,192.168.100.124,0> r] 1049
+^C  << ---------- Press Cntr+c and stop the script to get histogram output.
+2022 Oct 25 10:26:06 - Histogram of inverse bandwidth reported in nsecs/KB
+[<192.168.100.125,192.168.100.124,0> r]
+
+           value  ------------- Distribution ------------- count
+             128 |                                         0
+             256 |@@                                       15827
+             512 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   373157
+            1024 |                                         3040
+            2048 |                                         0
+
+Transfer rdma bytes of 1 MB size.
+# rds-stress
+waiting for incoming connection on 0.0.0.0:4000
+accepted connection from 192.168.100.124:34403 on 192.168.100.125:4000
+negotiated options, tasks will start in 2 seconds
+Starting up....
+tsks   tx/s   rx/s  tx+rx K/s    mbi K/s    mbo K/s tx us/c   rtt us cpu %
+   1      0   2411    2556.60 2467191.36       0.00    0.00     0.00 -1.00
+   1      0   2403    2548.11 2458041.90       0.00    0.00     0.00 -1.00
+   1      0   2502    2653.08 2559294.20       0.00    0.00     0.00 -1.00
+   1      0   2382    2525.92 2436633.90       0.00    0.00     0.00 -1.00
+   1      0   2396    2540.57 2449799.92       0.00    0.00     0.00 -1.00
+
+# rds-stress -r 192.168.100.124 -s 192.168.100.125 -D 1M -o -M 1
+connecting to 192.168.100.125:4000
+negotiated options, tasks will start in 2 seconds
+Starting up....
+tsks   tx/s   rx/s  tx+rx K/s    mbi K/s    mbo K/s tx us/c   rtt us cpu %
+   1   2410      0    2557.84       0.00 2466458.36   75.45   402.28 -1.00
+   1   2401      0    2548.27       0.00 2458193.82   74.44   404.07 -1.00
+   1   2499      0    2652.33       0.00 2558571.75   72.08   387.50 -1.00
+   1   2380      0    2525.99       0.00 2436703.32   74.09   407.52 -1.00
+
+# ./rds_rdma_xfer_rate.d
+2022 Oct 25 10:32:05
+[<connection> op]                        MB/s
+2022 Oct 25 10:32:15
+[<192.168.100.125,192.168.100.124,0> r] 2365
+2022 Oct 25 10:32:25
+[<192.168.100.125,192.168.100.124,0> r] 2424
+2022 Oct 25 10:32:35
+[<192.168.100.125,192.168.100.124,0> r] 2398
+2022 Oct 25 10:32:45
+[<192.168.100.125,192.168.100.124,0> r] 2443
+^C
+2022 Oct 25 10:32:47 - Histogram of inverse bandwidth reported in nsecs/KB
+[<192.168.100.125,192.168.100.124,0> r]
+
+           value  ------------- Distribution ------------- count
+              64 |                                         0
+             128 |                                         1
+             256 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 101206
+             512 |                                         1
+            1024 |                                         0
