@@ -29,7 +29,7 @@ from memstate_lib import constants
 
 
 class Pss(Base):
-    """ Analyzes output from /proc/<pid>/smaps """
+    """ Analyzes output from /proc/<pid>/smaps_rollup """
 
     def __get_total_pss_gb(self, pss_list=None):
         if pss_list is None:
@@ -40,13 +40,13 @@ class Pss(Base):
 
     def __display_top_proc_pss(self, num):
         """
-        Add up all the Pss values per-process, from /proc/<pid>/smaps.
+        Add up all the Pss values per-process, from /proc/<pid>/smaps_rollup.
         Sort in descending order, and display the top <num> consumers.
         @param num: The number of top memory consumers to print.
         """
         # pylint: disable=too-many-locals
-        mem = {}
-        mem_sorted = {}
+        pss = {}
+        pss_sorted = {}
         num_printed = 0
         start_time = time.time()
         num_files_scanned = 0
@@ -58,53 +58,61 @@ class Pss(Base):
                 abspath = os.path.join(proc_root, elem)
                 if not os.path.isdir(abspath):
                     continue
-                smaps_file = os.path.join(abspath, "smaps")
+                smaps_file = os.path.join(abspath, "smaps_rollup")
                 if not os.path.exists(smaps_file):
                     continue
                 pid = smaps_file.split("/")[2]
+                if pid.isdigit() is False:
+                    continue
                 data = ""
-                with open(smaps_file, "r", encoding="utf8") as smaps_fd:
-                    data = smaps_fd.read()
-                num_files_scanned = num_files_scanned + 1
-                for line in data.splitlines():
-                    if line.startswith("Pss:"):
-                        segment_mem = line.split(":")[1].strip().split()[0]
-                        if pid in mem:
-                            mem[pid] = int(mem[pid]) + int(segment_mem)
-                        else:
-                            mem[pid] = int(segment_mem)
-                time.sleep(0.01)  # Sleep for 10 ms, to avoid hogging CPU
+                try:
+                    with open(smaps_file, "r", encoding="utf8") as smaps_fd:
+                        data = smaps_fd.read()
+                    num_files_scanned = num_files_scanned + 1
+                    for line in data.splitlines():
+                        if line.startswith("Pss:"):
+                            pss_val = line.split(":")[1].strip().split()[0]
+                            pss[pid] = int(pss_val)
+                except OSError:
+                    pass
         except OSError:
             pass
 
         end_time = time.time()
+        if not pss:
+            print(
+                "Unable to get process memory usage summary for all "
+                "processes on this system;\nplease run memstate with "
+                "`-p <pid>` to get memory usage details for a specific "
+                "process.")
+            return
+
         self.log_debug(
             f"Time taken to extract Pss values from {num_files_scanned} "
-            f"/proc/<pid>/smaps files is {round(end_time - start_time)} "
-            "second(s).")
-        mem_sorted = OrderedDict(
-            sorted(mem.items(), key=lambda x: x[1], reverse=True))
-        for pid in mem_sorted:
+            f"/proc/<pid>/smaps_rollup files is {round(end_time - start_time)}"
+            " second(s).")
+        pss_sorted = OrderedDict(
+            sorted(pss.items(), key=lambda x: x[1], reverse=True))
+        for pid in pss_sorted:
             if num != constants.NO_LIMIT and num_printed >= num:
                 break
             p_comm_str = self.read_text_file(
                 f"/proc/{pid}/comm", on_error=str(pid))
             self.print_pretty_kb(
-                f"{p_comm_str.strip()}(pid:{pid})", mem_sorted[pid])
+                f"{p_comm_str.strip()}(pid:{pid})", pss_sorted[pid])
             num_printed += 1
         print("")
         print(
             "Total memory used by all processes: "
-            f"{self.__get_total_pss_gb(mem_sorted)} GB")
+            f"{self.__get_total_pss_gb(pss_sorted)} GB")
 
     def memstate_check_pss(self, num=constants.NUM_TOP_MEM_USERS):
         """Check per-process memory usage."""
         print(
-            "Note: this processing can take a long time - depending on the "
+            "Note: this processing can take a while - depending on the "
             "system config, load, etc.\nYou might also notice this script "
-            "consuming > 95% CPU during this run, for a few minutes.\nSo it is"
-            "not recommended to invoke -p/--pss or -a/-all with -v/--verbose "
-            "too often.\n")
+            "consuming > 95% CPU during this run, for a few minutes.\nSo it "
+            "is not recommended to invoke -p/--pss too often.\n")
         if num == constants.NO_LIMIT:
             self.print_header_l1("Process memory usage")
         else:
