@@ -1,0 +1,23 @@
+Purpose: This script is used to trace and display the send/recv bytes per connection
+
+Arguments: None
+
+Output format: [<src-ip>,<dst-ip>,<tos> <send/recv>] <Data transfer rate in MB/s>
+
+Sample output: Shown below
+
+# ./rds_bcopy_metric.d | grep "192.168.0.8,192.168.0.6"
+[<192.168.0.8,192.168.0.6,0> send] 16
+[<192.168.0.8,192.168.0.6,0> recv] 16
+[<192.168.0.8,192.168.0.6,0> send] 16
+[<192.168.0.8,192.168.0.6,0> recv] 16
+[<192.168.0.8,192.168.0.6,0> send] 16
+[<192.168.0.8,192.168.0.6,0> recv] 16
+[<192.168.0.8,192.168.0.6,0> send] 16
+[<192.168.0.8,192.168.0.6,0> recv] 16
+[<192.168.0.8,192.168.0.6,0> send] 16
+[<192.168.0.8,192.168.0.6,0> recv] 16
+[<192.168.0.8,192.168.0.6,0> send] 16
+[<192.168.0.8,192.168.0.6,0> recv] 16
+[<192.168.0.8,192.168.0.6,0> send] 16
+[<192.168.0.8,192.168.0.6,0> recv] 16

@@ -1,0 +1,46 @@
+Here are some tools written based on makedumpfile code to dump information
+from live kernel or the crashed kernel. It looks at /proc/kcore on live system
+and looks at /proc/vmcore in kexec mode for the crashed kernel. All of the tools
+don't need kernel debug info packages.
+
+Due to the incompatiblility of makedumpfile, for each tool we have a uek4 version
+binary and another version binary for uek5 and higher. uek4 version binaries would
+have a suffix of "_uek4" in the binary file name. Build uek4 version on OL6/OL7
+machines and build uek5 and higher versions on OL7/OL8 machines.
+
+You need to the tools as "root" user.
+
+Tool 1: filecache
+
+# filecache --help
+filecache is a tool that dumps the per file page cache usages on live systems.
+Output is one line per file and is sorted by page cache size in decreasing order.
+There can be too many files to dump though most of them are not interesting because of small use of page cache. Two parameters are provided to control the number of files to dump. One is _topn_, it is a number used to limit the max number of files to be printed. The other one is _pagelimit_, it is a number which specifies the smallest amount of cached pages, only the files with that many or more cache pages are printed.
+On Numa system, the page source (Numa nodes) can be printed too when required. Add _numa_ option to enable page source dumping. On None-Numa system, page sourceinformation is skipped even _numa_ is specified because all the pages come from the only node
+With -kexec option when run in kexec mode, look at the panicked production kernelrather than current running kernel
+parameters and options:
+   -n, --topn <number>        report top <number> files, 50 by default
+   -m, --min <number>         report files with <number> or more pages in the cache, 1000 by default
+   -u, --numa                 report per-NUMA-node statistics
+   -k, --kexec                run in kexec mode
+   -h, --help                 show this information
+   -V, --version              show version
+
+Note: works on Oracle UEK4/UEK5/UEK6 kernels only
+
+
+Tool 2: dentrycache
+# dentrycache --help
+dentrycache is a tool that dumps the dentry path on live systems.
+Output is one dentry per line.
+Use --limit option to sepecify the max number of dentries to list
+Use --negative option to output negative dentries only
+Use -kexec option when run in kexec mode, look at the panicked production kernelrather than current running kernel
+parameters and options:
+   -l, --limit <number>       list at most <number> dentries, 10000 by default
+   -n, --negative             list negative dentries only, disabled by default
+   -k, --kexec                run in kexec mode
+   -h, --help                 show this information
+   -V, --version              show version
+
+Note: works on Oracle UEK4/UEK5/UEK6 kernels only

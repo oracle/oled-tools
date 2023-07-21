@@ -1,0 +1,29 @@
+Purpose: This script detects and prints the details of all ARP requests,
+replies, and ignored packets on all the network interfaces present on the
+system where this script is being executed.
+
+Arguments: None.
+
+Output format: each line lists
+	<date>
+	<time>
+	<interface>
+	<Send/Recv>
+	arp <request/reply>
+	sip:<Source IP>,
+	tip:<Target IP>
+
+Sample output: Shown below.
+
+# ./arp_origin.d
+2022 Nov  1 12:36:54 ib0 Recv arp request  sip: 192.168.18.8, tip: 192.168.18.5
+2022 Nov  1 12:36:54 ib0 Send arp reply sip: 192.168.18.5, tip: 192.168.18.8
+2022 Nov  1 12:36:54 ib0 Send arp request: sip: 192.168.18.5, tip: 192.168.18.8
+2022 Nov  1 12:36:54 ib0 Recv arp reply sip: 192.168.18.8 tip: 192.168.18.5
+2022 Nov  1 12:36:54 ib1 Recv arp request (Ignoring)  sip: 192.168.18.8, tip: 192.168.18.5
+2022 Nov  1 12:36:55 ib0 Recv arp request  sip: 192.168.18.8, tip: 192.168.18.5
+2022 Nov  1 12:36:55 ib0 Send arp reply sip: 192.168.18.5, tip: 192.168.18.8
+2022 Nov  1 12:36:55 ib0 Send arp request: sip: 192.168.18.5, tip: 192.168.18.8
+2022 Nov  1 12:36:55 ib0 Recv arp reply sip: 192.168.18.8 tip: 192.168.18.5
+2022 Nov  1 12:36:55 ib1 Recv arp request (Ignoring)  sip: 192.168.18.8, tip: 192.168.18.5
+

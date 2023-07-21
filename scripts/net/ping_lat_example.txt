@@ -1,0 +1,75 @@
+ping 192.168.18.9 -I ib0 -c 5
+PING 192.168.18.9 (192.168.18.9) from 192.168.18.5 ib0: 56(84) bytes of data.
+64 bytes from 192.168.18.9: icmp_seq=1 ttl=64 time=0.636 ms
+64 bytes from 192.168.18.9: icmp_seq=2 ttl=64 time=0.366 ms
+64 bytes from 192.168.18.9: icmp_seq=3 ttl=64 time=0.167 ms
+64 bytes from 192.168.18.9: icmp_seq=4 ttl=64 time=0.135 ms
+64 bytes from 192.168.18.9: icmp_seq=5 ttl=64 time=0.120 ms
+
+--- 192.168.18.9 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4084ms
+rtt min/avg/max/mdev = 0.120/0.284/0.636/0.197 ms
+[root@rds-test1 ~]#
+
+[root@rds-test1 dtrace]# dtrace -Cqs ping_lat.d
+icmp id: 14434, icmp sequence: 256, src ip: 192.168.18.5, dst ip: 192.168.18.9
+
+routine                         delta(ns)
+
+ip_send_skb
+dev_hard_start_xmit              190382
+ipoib_start_xmit                  44855
+ipoib_cm_send                     84644
+icmp_rcv                         322743
+
+request-reply latency:           642624
+------------------------------------------------------------------
+icmp id: 14434, icmp sequence: 512, src ip: 192.168.18.5, dst ip: 192.168.18.9
+
+routine                         delta(ns)
+
+ip_send_skb
+dev_hard_start_xmit               96159
+ipoib_start_xmit                  44214
+ipoib_cm_send                     44720
+icmp_rcv                         173769
+
+request-reply latency:           358862
+------------------------------------------------------------------
+icmp id: 14434, icmp sequence: 768, src ip: 192.168.18.5, dst ip: 192.168.18.9
+
+routine                         delta(ns)
+
+ip_send_skb
+dev_hard_start_xmit               18217
+ipoib_start_xmit                   8269
+ipoib_cm_send                      8729
+icmp_rcv                         129234
+
+request-reply latency:           164449
+------------------------------------------------------------------
+icmp id: 14434, icmp sequence: 1024, src ip: 192.168.18.5, dst ip: 192.168.18.9
+
+routine                         delta(ns)
+
+ip_send_skb
+dev_hard_start_xmit               12989
+ipoib_start_xmit                   5900
+ipoib_cm_send                      4801
+icmp_rcv                         110251
+
+request-reply latency:           133941
+------------------------------------------------------------------
+icmp id: 14434, icmp sequence: 1280, src ip: 192.168.18.5, dst ip: 192.168.18.9
+
+routine                         delta(ns)
+
+ip_send_skb
+dev_hard_start_xmit               11200
+ipoib_start_xmit                   4504
+ipoib_cm_send                      4559
+icmp_rcv                         100701
+
+request-reply latency:           120964
+------------------------------------------------------------------
+

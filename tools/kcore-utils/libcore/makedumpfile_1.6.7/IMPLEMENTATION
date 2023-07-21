@@ -1,0 +1,282 @@
+* The kdump-compressed format
+  makedumpfile provides two DUMPFILE formats (the ELF format and the
+  kdump-compressed format). By default, makedumpfile makes a DUMPFILE
+  in the kdump-compressed format. The kdump-compressed format is readable
+  only with the crash utility, and it can be smaller than the ELF format
+  because of the compression support.
+
+  - The file structure
+                                                 File offset
+    +------------------------------------------+ 0x0
+    |    main header (struct disk_dump_header) |
+    |------------------------------------------+ block 1
+    |    sub header (struct kdump_sub_header)  |
+    |------------------------------------------+ block 2
+    |            1st-bitmap                    |
+    |------------------------------------------+ block 2 + X blocks
+    |            2nd-bitmap                    | (aligned by block)
+    |------------------------------------------+ block 2 + 2 * X blocks
+    | page header for pfn 0 (struct page_desc) | (aligned by block)
+    | page header for pfn 1 (struct page_desc) |
+    |                     :                    |
+    | page header for pfn Z (struct page_desc) |
+    |------------------------------------------| (not aligned by block)
+    |         page data (pfn 0)                |
+    |         page data (pfn 1)                |
+    |                        :                 |
+    |         page data (pfn Z)                |
+    +------------------------------------------+ offset_eraseinfo
+    | erase mystruct2.mystruct1.var size 4     |
+    | erase mystruct2.mystruct1.ptr nullify    |
+    | erase mystruct2.mystruct.array size 100  |
+    +------------------------------------------+
+
+
+  - main header
+    The main header of the kdump compressed format is the almost same as the
+    one of diskdump. This header has the following members, and the member
+    signature and header_version are different from diskdump.
+
+    struct disk_dump_header {
+        char                    signature[SIG_LEN];     /* = "KDUMP   " */
+        int                     header_version; /* Dump header version */
+        struct new_utsname      utsname;        /* copy of system_utsname */
+        struct timeval          timestamp;      /* Time stamp */
+        unsigned int            status;         /* Above flags */
+        int                     block_size;     /* Size of a block in byte */
+        int                     sub_hdr_size;   /* Size of arch dependent
+                                                   header in blocks */
+        unsigned int            bitmap_blocks;  /* Size of Memory bitmap in
+                                                   block */
+        unsigned int            max_mapnr;      /* = max_mapnr, OBSOLETE!
+						   32bit only, full 64bit
+						   in sub header. */
+        unsigned int            total_ram_blocks;/* Number of blocks should be
+                                                   written */
+        unsigned int            device_blocks;  /* Number of total blocks in
+                                                 * the dump device */
+        unsigned int            written_blocks; /* Number of written blocks */
+        unsigned int            current_cpu;    /* CPU# which handles dump */
+        int                     nr_cpus;        /* Number of CPUs */
+        struct task_struct      *tasks[0];
+    };
+
+  - sub header
+    The sub header of the kdump compressed format is original. This header
+    has the member phys_base and dump_level. The member phys_base is for
+    an x86_64 relocatable kernel, and the member dump_level has '-d' option's
+    value of makedumpfile command.
+
+    struct kdump_sub_header {
+        unsigned long   phys_base;
+        int             dump_level;     /* header_version 1 and later */
+	int		split;		/* header_version 2 and later */
+	unsigned long	start_pfn;	/* header_version 2 and later,
+					   OBSOLETE! 32bit only, full
+					   64bit in start_pfn_64. */
+	unsigned long	end_pfn;	/* header_version 2 and later,
+					   OBSOLETE! 32bit only, full
+					   64bit in end_pfn_64. */
+	off_t		offset_vmcoreinfo;/* header_version 3 and later */
+	unsigned long	size_vmcoreinfo;  /* header_version 3 and later */
+	off_t		offset_note;      /* header_version 4 and later */
+	unsigned long	size_note;        /* header_version 4 and later */
+	off_t		offset_eraseinfo; /* header_version 5 and later */
+	unsigned long	size_eraseinfo;   /* header_version 5 and later */
+	unsigned long long start_pfn_64;  /* header_version 6 and later */
+	unsigned long long end_pfn_64;	  /* header_version 6 and later */
+	unsigned long long max_mapnr_64;  /* header_version 6 and later */
+    };
+
+  - 1st-bitmap
+    The bit of 1st-bitmap presents either a page on memory hole, or not.
+    If a page is on memory hole, the corresponding bit is off. Otherwise,
+    it is on.
+
+
+  - 2nd-bitmap
+    The bit of 2nd-bitmap presents either a dumpable page, or not.
+    If a page is on memory hole or excluded by makedumpfile command, the
+    corresponding bit is off. Otherwise, it is on.
+
+
+  - page header
+    There are page headers corresponding to dumpable pages.
+    This header presents the corresponding page information (compressed, or not.
+    etc.)
+
+    typedef struct page_desc {
+        off_t                   offset;         /* the offset of the page data*/
+        unsigned int            size;           /* the size of this dump page */
+        unsigned int            flags;          /* flags */
+        unsigned long long      page_flags;     /* page flags */
+    } page_desc_t;
+
+
+* The ELF format
+  There are two different ELF format(ELF32, ELF64) for K-bit architectures (K=32,64).
+  Since they almost have the same behaviour in this situation, the following will use
+  ELF32 as a example.
+
+  - The file structure
+
+    +---------------------------------+
+    |  elf_header (struct elf32_hdr)  |
+    |---------------------------------+
+    |  PT_NOTE    (struct elf32_phdr) |
+    |---------------------------------+
+    |  PT_LOAD(1) (struct elf32_phdr) |
+    |  PT_LOAD(2) (struct elf32_phdr) |
+    |             :                   |
+    |  PT_LOAD(Z) (struct elf32_phdr) |
+    |---------------------------------+
+    |  NOTE                           |
+    |---------------------------------+
+    |  segment(1)                     |
+    |  segment(2)                     |
+    |          :                      |
+    |  segment(Z)                     |
+    +---------------------------------+
+
+  - elf_header
+    This header is almost the same as a normal elf_header. The difference is that the
+    e_flags is used for indicating whether the dump file is complete or not.
+    0x0 : complete,
+    0x1 : incomplete
+
+	typedef struct elf32_hdr{
+		unsigned char e_ident[EI_NIDENT];	/* ELF "magic number" */
+		Elf32_Half    e_type;		/* Object file type (CORE) */
+		Elf32_Half    e_machine;
+		Elf32_Word    e_version;
+		Elf32_Addr    e_entry;
+		Elf32_Off     e_phoff;		/* Program header table file offset */
+		Elf32_Off     e_shoff;
+		Elf32_Word    e_flags;
+		Elf32_Half    e_ehsize;		/* Size of this header */
+		Elf32_Half    e_phentsize;	/* Size of program headers */
+		Elf32_Half    e_phnum;		/* Number of program headers */
+		Elf32_Half    e_shentsize;
+		Elf32_Half    e_shnum;
+		Elf32_Half    e_shstrndx;
+	} Elf32_Ehdr;
+
+  - PT_NOTE and PT_LOAD
+    PT_NOTE corresponds to NOTE and PT_LOAD to segment.
+    They present the corresponding NOTE and segments information.
+
+
+	typedef struct elf32_phdr{
+		Elf32_Word    p_type;
+		Elf32_Off     p_offset;		/* Segment file offset */
+		Elf32_Addr    p_vaddr;		/* Segment virtual address */
+		Elf32_Addr    p_paddr;		/* Segment physical address */
+		Elf32_Word    p_filesz;		/* Segment size in file */
+		Elf32_Word    p_memsz;		/* Segment size in memory */
+		Elf32_Word    p_flags;
+		Elf32_Word    p_align;		/* Segment alignment, file & memory */
+	} Elf32_Phdr;
+
+  - note
+    The note structure
+
+    +------------------------------------+
+    |  note header 1 (struct elf32_note) |
+    |  note header 2 (struct elf32_note) |
+    |               :                    |
+    |  note header N (struct elf32_note) |
+    |------------------------------------+
+    |  note data 1                       |
+    |  note data 2                       |
+    |          :                         |
+    |  note data N                       |
+    +------------------------------------+
+
+	typedef struct elf32_note {
+		Elf32_Word    n_namesz;       /* Name size */
+		Elf32_Word    n_descsz;       /* Content size */
+		Elf32_Word    n_type;         /* Content type */
+	} Elf32_Nhdr;
+
+  - segments
+    The data dumped are all stored in segments and notes.
+
+
+* The incomplete DUMPFILE
+  When generating DUMPFILE, if ENOSPACE error happens, the DUMPFILE will be
+  incomplete.
+
+  - The incomplete kdump-compressed DUMPFILE
+
+	   the complete                  the incomplete
+    +-----------------------+    +-----------------------+
+    |      main header      |    |      main header      |  have incomplete flag
+    |-----------------------+    |-----------------------+
+    |      sub header       |    |      sub header       |
+    |-----------------------+    |-----------------------+
+    |      1st-bitmap       |    |      1st-bitmap       |
+    |-----------------------+    |-----------------------+
+    |      2nd-bitmap       |    |      2nd-bitmap       |
+    |-----------------------+    |-----------------------+
+    | page header for pfn 0 |    | page header for pfn 0 |
+    | page header for pfn 1 |    | page header for pfn 1 |
+    |                  :    |    |                  :    |
+    | page header for pfn N |    | page header for pfn N |  The page headers after
+    |                  :    |    |                       |  N don't exist. The
+    | page header for pfn Z |    |                       |  value of it is zero,
+    |-----------------------|    |-----------------------|  when try to read it.
+    |   page data (pfn 0)   |    |   page data (pfn 0)   |
+    |   page data (pfn 1)   |    |   page data (pfn 1)   |
+    |                  :    |    |                  :    |
+    |   page data (pfn N)   |    |   page data (pfn N)   |
+    |                  :    |    +-----------------------+
+    |   page data (pfn Z)   |
+    +-----------------------+
+
+    The incomplete flag is set into status of disk_dump_header by
+			  status |= DUMP_DH_COMPRESSED_INCOMPLETE
+    DUMP_DH_COMPRESSED_INCOMPLETE : 0x8
+
+    The page header and page data are written in pairs. When writing page data
+    (pfn N+1), if ENOSPACE error happens, the page headers after N won't be
+    written either.
+    Since the data lost is filled with zero when it is read, the page_desc->offset
+    will also be zero. And zero page has its own offset not equal 0. So when reading
+    page from incomplete core, only the page lost by ENOSPACE errors has 0 in its
+    corresponding page descriptor's member offset.
+
+    If there is no page data dumped into the DUMPFILE, the DUMPFILE can't be
+    analysed by crash.
+
+  - The incomplete elf DUMPFILE
+
+       the complete          the incomplete
+    +-------------+         +-------------+
+    |  elf header |         |  elf header |  have incomplete flag
+    |-------------+         |-------------+
+    |  PT_NOTE    |         |  PT_NOTE    |
+    |  PT_LOAD(1) |         |  PT_LOAD(1) |
+    |         :   |         |         :   |
+    |  PT_LOAD(N) |         |  PT_LOAD(N) |  The PT_LOAD after N don't exist.
+    |         :   |         |             |  The value of it is zero, when try
+    |  PT_LOAD(Z) |         |             |  to read it.
+    |-------------+         |-------------+
+    |    NOTE     |         |     NOTE    |
+    |-------------+         |-------------+
+    |  segment(1) |         |  segment(1) |
+    |          :  |         |          :  |
+    |  segment(N) |         |  segment(N) |  The segment(N) is incomplete.
+    |          :  |         +-------------+  The segments after N don't exist.
+    |  segment(Z) |
+    +-------------+
+
+    The incomplete flag is set into e_flags of elf_header by
+			      e_flags |= DUMP_ELF_INCOMPLETE
+    DUMP_ELF_INCOMPLETE : 0x1
+
+    The PT_LOAD and segment are written in pairs. When writing segment(N)
+    , if ENOSPACE error happens, the PT_LOAD after N won't be written
+    either.
+
+    If there is no segment dumped into the DUMPFILE, the DUMPFILE can't be
+    analysed by crash.

@@ -1,0 +1,14 @@
+Purpose: track egress drop reason along with pid and comm. 
+
+Arguments: None [Enable rds egress trace point]
+
+Output format: <Date> <PID> <Comm> <src_ip, dst_ip, tos> reason=<reason>
+
+Sample output: Shown below
+
+# ./rds_egress_TP.d
+2022 Oct 21 03:04:45 ctrl+c to stop
+2022 Oct 21 03:05:50 pid=373319 comm=rds-stress [<192.168.0.7,192.168.0.5,0>] reason=rdsinfo pending
+2022 Oct 21 03:10:52 pid=373319 comm=rds-stress [<192.168.0.7,192.168.0.5,0>] reason=rdsinfo pending
+2022 Oct 21 03:13:48 pid=373319 comm=rds-stress [<192.168.0.7,192.168.0.5,0>] reason=rdsinfo pending
+
