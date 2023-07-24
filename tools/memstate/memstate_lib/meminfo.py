@@ -125,8 +125,15 @@ class Meminfo(Base):
                 hp_nr_total = hp_nr_total + int(i)
             if hp_nr_total:
                 self.print_pretty_gb_l1(
-                    f"Hugepages ({key} KB)",
+                    f"Total Hugepages ({key} KB)",
                     round(self.convert_kb_to_gb(hp_nr_total), 1))
+        hp_free = self.hugepages.get_free_hugepages_matrix_kb()
+        for key, val in hp_free.items():
+            hp_free_total = sum(val)
+            if hp_free_total:
+                self.print_pretty_gb_l1(
+                    f"Free Hugepages ({key} KB)",
+                    round(self.convert_kb_to_gb(hp_free_total), 1))
 
     def display_usage_summary(self):
         """Report several memory metrics."""
