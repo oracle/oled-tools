@@ -171,13 +171,13 @@ class Memstate(Base):
         mfk_update_str = (
             "Please update to the recommended value using either 'sysctl -w' "
             "or in /etc/sysctl.conf.")
-        if recommended_mfk_kb > current_mfk_kb:
+        if round(current_mfk_kb/recommended_mfk_kb, 1) < 0.8:
             self.print_warn(mfk_warning_str)
             print(
                 "There is a higher possiblity of compaction stalls due to "
                 "fragmentation if free memory dips too low.")
             print(mfk_update_str)
-        elif current_mfk_kb >= 2*recommended_mfk_kb:
+        elif round(current_mfk_kb/recommended_mfk_kb, 1) > 1.5:
             self.print_warn(mfk_warning_str)
             print(
                 "There is a higher possibility of the OOM-killer being invoked"
