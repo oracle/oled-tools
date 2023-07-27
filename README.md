@@ -1,6 +1,6 @@
 # oled-tools
 
-Oracle Linux Enchanced Diagnostic (OLED) tools is a collection of tools,
+Oracle Linux Enhanced Diagnostic (OLED) tools is a collection of tools,
 scripts, configs, etc. that collect and analyze data about the health of the
 system in order to root cause and resolve any system issues.
 
