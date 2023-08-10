@@ -241,28 +241,27 @@ class Numa(Base):
             self.print_header_l1("Per-NUMA node memory usage")
         i = 0
         nlist = {}
-        hdr = None
+        key = None
         start_time = time.time()
         while i < self.num_numa_nodes:
             pages = 0
             for line in self.numa_maps.splitlines():
                 ni_search_str = "N" + str(i) + "="
-                hdr_printed = False
                 if line[:1].isalpha() and line.endswith(":"):
                     comm = line[:-1].strip()
-                    hdr = comm + " " + ni_search_str[:-1].strip()
-                    hdr_printed = False
+                    key = comm + " " + ni_search_str[:-1].strip()
+                    key_stored = False
                 node_i = [
                     elem for elem in line.split() if ni_search_str in elem
                 ]
                 if node_i:
-                    if hdr_printed is False:
-                        hdr_printed = True
+                    if key_stored is False:
+                        key_stored = True
                         pages = 0  # Reset!
                     for elem in node_i:
                         pages += int(str(elem).split("=")[1])
-                    if hdr:
-                        nlist[hdr] = int(pages) * constants.PAGE_SIZE_KB
+                    if key:
+                        nlist[key] = pages
             i += 1  # Check next numa node
         end_time = time.time()
         self.log_debug(
