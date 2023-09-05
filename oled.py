@@ -34,7 +34,8 @@ BINDIR = "/usr/libexec/oled-tools"
 
 # Valid oled subcomands
 OLED_CMDS = (
-    "dentrycache", "filecache", "kstack", "lkce", "memstate", "syswatch")
+    "dentrycache", "filecache", "kstack", "lkce", "memstate", "syswatch",
+    "scanfs")
 
 # oled subcommands with a UEK4 variant
 OLED_UEK4_CMDS = ("filecache", "dentrycache")
@@ -53,6 +54,7 @@ Valid commands:
      dentrycache -- List a sample of active dentries
      kstack      -- Gather kernel stack based on the process status or PID
      syswatch    -- Execute user-provided commands based on the CPU utilization
+     scanfs      -- Scan KVM images for corruption, supports XFS and EXT4
 """,
         epilog="NOTE: Must run as root.")
 

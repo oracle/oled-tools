@@ -20,7 +20,7 @@
 
 VERSION="0.6"
 
-subdirs := tools/lkce tools/kcore-utils tools/memstate tools/kstack tools/syswatch
+subdirs := tools/lkce tools/kcore-utils tools/memstate tools/kstack tools/syswatch tools/scanfs
 subdirs := $(subdirs) scripts
 rev_subdirs := $(shell echo -n "$(subdirs) " | tac -s ' ')
 OLEDDIR := $(DESTDIR)/etc/oled

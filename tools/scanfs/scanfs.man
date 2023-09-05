@@ -1,0 +1,76 @@
+.TH OLED SCANFS 8 "May 2023" "Oracle Linux Enhanced Diagnostics" "0.5"
+
+.SH NAME
+oled scanfs - Scan KVM images for corruption. Supports XFS and EXT4 filesystems.
+
+.SH SYNOPSIS
+oled scanfs [-h] [-c | -s] directory_path
+
+.SH DESCRIPTION
+The scanfs tool takes the path to image files as an argument and scans the XFS and
+EXT4 volumes from these images for corruption. The tool takes all the image files under
+the given directory path and creates a reflink copy of these image files. Once the
+reflink copy is done, it creates loop devices for these files and adds all partitions
+and volume groups, renames all the volume groups including the ones that conflict with
+the host and scans all the XFS and EXT4 volumes using xfs_repair and e2fsck.
+
+Sample output:
+
+Scanfs 1.0
+
+
+Setting up
+setting up - Volume1.img
+setting up - Volume2.img
+Setup Complete
+
+Checking XFS Filesystems
+Scanning /dev/Scan037871-VG/Home
+Scanning /dev/Scan037871-VG/Root
+Scanning /dev/Scan037871-VG/Sys
+Scanning /dev/mapper/loop0p1
+
+Checking EXT4 Filesystems
+
+Cleaning up
+Cleanup complete.
+
+Check /EXAVMIMAGES/bug34037871/Scanfs-2023-06-28T09-25-36/summary for more details
+
+Corruption found in these volumes:
+
+************************************
+
+xfs - /dev/Scan037871-VG/Sys
+
+************************************
+
+The output shows the location to log file, which holds more details on the images and
+corruption. It lists out the volumes that it finds to be corrupt.
+
+This tool also supports setup and cleanup - see OPTIONS for more details.
+
+.SH OPTIONS
+.TP
+-h, --help
+    Displays a help message with all the valid options that
+can be passed to the tool.
+
+.TP
+-s, --setup
+    Do not scan the volumes, just sets up the loop devices, partitions and volume
+groups and exit. It displays all the images that are set up.
+
+.TP
+-c, --cleanup
+    Cleanup the already setup environment. Deactivates VGs and remove partition
+mappings and loop devices. It shows the reflink images left behind that might
+need to be purged.
+
+.SH REPORTING BUGS
+.TP
+Please contact Oracle Linux Support to report any bugs for OLED tools.
+
+.SH AUTHOR
+.TP
+Srikanth C S <srikanth.c.s@oracle.com>
