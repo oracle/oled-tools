@@ -5,7 +5,7 @@ oled memstate - Captures and analyzes various memory usage statistics on the
 running system.
 
 .SH SYNOPSIS
-oled memstate [-h] [-p [PID]] [-w] [-s [FILE]] [-n [FILE]] [-a] [-v] \
+oled memstate [-h] [-p [PID]] [-s [FILE]] [-n [FILE]] [-a] [-v] \
 [-f [INTERVAL]]
 
 .SH DESCRIPTION
@@ -42,12 +42,6 @@ invoke this option (with or without -v/--verbose - that does not matter) too
 often. If a process's pid is passed as input, this option will display the
 memory mappings and usage summary for that process only, extracted from
 /proc/<pid>/smaps file.
-
-.TP
--w, --swap
-    Displays per-process swap usage, for the top 10 swap consumers. This
-data is gathered from /proc/<pid>/status files and sorted. Does not support
--v/--verbose output.
 
 .TP
 -s [FILE], --slab [FILE]
@@ -91,8 +85,7 @@ details.
 
 .TP
 -v, --verbose
-    Verbose data capture; this should be combined with other
-options except -w/--swap (see other options for details).
+    Verbose data capture; this should be combined with other options.
 
 .TP
 -f [INTERVAL], --frequency [INTERVAL]

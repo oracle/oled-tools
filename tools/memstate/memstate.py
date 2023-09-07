@@ -103,10 +103,6 @@ class Memstate(Base):
         else:
             self.pss.memstate_check_pss(pid)
 
-    def memstate_opt_swap(self):
-        """Run Swap checks."""
-        self.swap.memstate_check_swap(constants.NO_LIMIT)
-
     def memstate_opt_slab(self, verbose=False):
         """Run Slabinfo checks."""
         if verbose:
@@ -287,17 +283,12 @@ def validate_args(args):
     Checks if there are any invalid combinations of arguments:
       - "all" cannot be mixed with other options (except "verbose" and
         "frequency")
-      - "verbose" can be combined with almost any other option except "swap"
+      - "verbose" can be combined with any other option
       - "frequency" cannot be used if an input file is provided (for "slab" or
         "numa")
       - "frequency" cannot be used with "numa" for live capture too (it's too
         expensive)
     """
-    if args.verbose and args.swap:
-        print(
-            "Option -w/--swap does not support -v/--verbose; "
-            "see usage for more details.")
-        return 1
     if args.frequency:
         if args.numa is not None:
             print(
@@ -311,7 +302,7 @@ def validate_args(args):
             return 1
     if args.all:
         # pylint: disable=too-many-boolean-expressions
-        if (args.pss or args.swap
+        if (args.pss
                 or (args.numa is not None and args.numa != 'nofile')
                 or (args.slab is not None and args.slab != 'nofile')):
             print(
@@ -333,9 +324,6 @@ def main():
         "-p", "--pss", metavar="PID", nargs="?",
         const=constants.DEFAULT_SHOW_PSS_SUMMARY,
         help="display per-process memory usage")
-    parser.add_argument(
-        "-w", "--swap", action="store_true",
-        help="display per-process swap usage")
     parser.add_argument(
         "-s", "--slab", metavar="FILE", help="analyze/display slab usage",
         nargs="?", const="nofile")
@@ -422,9 +410,6 @@ def main():
         if args.pss:
             args_passed = True
             memstate.memstate_opt_pss(args.pss, opt_verbose)
-        if args.swap:
-            args_passed = True
-            memstate.memstate_opt_swap()
         if args.slab is not None:
             args_passed = True
             memstate.memstate_opt_slab(opt_verbose)
