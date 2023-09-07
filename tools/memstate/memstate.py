@@ -96,12 +96,12 @@ class Memstate(Base):
             self.swap.memstate_check_swap()
         self.check_health()
 
-    def memstate_opt_pss(self, verbose=False):
+    def memstate_opt_pss(self, pid, verbose=False):
         """Run PSS checks."""
         if verbose:
-            self.pss.memstate_check_pss(constants.NO_LIMIT)
+            self.pss.memstate_check_pss(pid, constants.NO_LIMIT)
         else:
-            self.pss.memstate_check_pss()
+            self.pss.memstate_check_pss(pid)
 
     def memstate_opt_swap(self):
         """Run Swap checks."""
@@ -330,7 +330,8 @@ def main():
             'memstate: Capture and analyze memory usage data on this system.'))
 
     parser.add_argument(
-        "-p", "--pss", action="store_true",
+        "-p", "--pss", metavar="PID", nargs="?",
+        const=constants.DEFAULT_SHOW_PSS_SUMMARY,
         help="display per-process memory usage")
     parser.add_argument(
         "-w", "--swap", action="store_true",
@@ -420,7 +421,7 @@ def main():
             memstate.memstate_opt_all(opt_verbose)
         if args.pss:
             args_passed = True
-            memstate.memstate_opt_pss(opt_verbose)
+            memstate.memstate_opt_pss(args.pss, opt_verbose)
         if args.swap:
             args_passed = True
             memstate.memstate_opt_swap()

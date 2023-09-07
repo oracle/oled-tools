@@ -32,8 +32,10 @@ STRUCT_PAGE_SIZE = 64
 ONE_KB = 1024.00
 ONE_MB = ONE_KB * ONE_KB
 ONE_GB = ONE_KB * ONE_MB
+VMA_KB = 256 * ONE_KB
 PERCENT = 0.01
 NO_LIMIT = -1
+DEFAULT_SHOW_PSS_SUMMARY = -1
 # The assumption here is that the system can be at most an 8-socket system.
 MAX_NUMA_NODES = 8
 # For parsing output from /proc/buddyinfo. Lower orders are 0-3, higher order

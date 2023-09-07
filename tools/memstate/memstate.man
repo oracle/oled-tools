@@ -5,7 +5,8 @@ oled memstate - Captures and analyzes various memory usage statistics on the
 running system.
 
 .SH SYNOPSIS
-oled memstate [-h] [-p] [-w] [-s [FILE]] [-n [FILE]] [-a] [-v] [-f [INTERVAL]]
+oled memstate [-h] [-p [PID]] [-w] [-s [FILE]] [-n [FILE]] [-a] [-v] \
+[-f [INTERVAL]]
 
 .SH DESCRIPTION
 The memstate tool gathers data about memory usage on the system where it's run,
@@ -29,14 +30,18 @@ more accurate values, use the -p option, which extracts per-process PSS values.
 can be passed to the tool.
 
 .TP
--p, --pss
-    Displays per-process memory usage, for the top 10 process
-memory consumers. This gathers data from /proc/<pid>/smaps files and sorts them,
-to display the most memory intensive processes on the system. Use with
--v/--verbose to get memory usage data for all processes on the system. Note
-that this processing can be quite expensive w.r.t. time taken/CPU cycles, esp.
-if run on a heavily-loaded system. So it is not recommended to invoke this
-option (with or without -v/--verbose - that does not matter) too often.
+-p [PID], --pss [PID]
+     Displays per-process memory usage, for the top 10 process
+memory consumers. This gathers data from /proc/<pid>/smaps_rollup files and
+sorts them, to display the most memory intensive processes on the system. It
+displays the following metrics per process: PSS, RSS, private, swap-pss.
+Use with -v/--verbose to get memory usage data for all processes on the system.
+Note that this processing can be quite expensive w.r.t. time taken/CPU cycles,
+esp. if run on a heavily-loaded system. Therefore, it is not recommended to
+invoke this option (with or without -v/--verbose - that does not matter) too
+often. If a process's pid is passed as input, this option will display the
+memory mappings and usage summary for that process only, extracted from
+/proc/<pid>/smaps file.
 
 .TP
 -w, --swap
