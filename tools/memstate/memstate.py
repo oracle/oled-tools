@@ -36,6 +36,7 @@ from memstate_lib import Hugepages
 from memstate_lib import Pss
 from memstate_lib import Swap
 from memstate_lib import Logfile
+from memstate_lib import Rss
 from memstate_lib import constants
 
 
@@ -49,6 +50,7 @@ class Memstate(Base):
         self.slabinfo = Slabinfo()
         self.buddyinfo = Buddyinfo()
         self.pss = Pss()
+        self.rss = Rss()
         self.swap = Swap()
         self.print_header = True
 
@@ -71,8 +73,9 @@ class Memstate(Base):
         Display the memory usage summary, and run a quick health check.
         """
         self.meminfo.display_usage_summary()
-        self.slabinfo.memstate_check_slab()
         self.numa.memstate_check_numa()
+        self.slabinfo.memstate_check_slab()
+        self.rss.memstate_check_rss()
         self.check_health()
 
     def memstate_opt_all(self, verbose):
@@ -82,14 +85,14 @@ class Memstate(Base):
         """
         self.meminfo.display_usage_summary()
         if verbose:
-            self.slabinfo.memstate_check_slab(constants.NO_LIMIT)
             self.numa.memstate_check_numa()
-            self.pss.memstate_check_pss(constants.NO_LIMIT)
+            self.slabinfo.memstate_check_slab(constants.NO_LIMIT)
+            self.rss.memstate_check_rss(constants.NO_LIMIT)
             self.swap.memstate_check_swap(constants.NO_LIMIT)
         else:
-            self.slabinfo.memstate_check_slab()
             self.numa.memstate_check_numa()
-            self.pss.memstate_check_pss()
+            self.slabinfo.memstate_check_slab()
+            self.rss.memstate_check_rss()
             self.swap.memstate_check_swap()
         self.check_health()
 

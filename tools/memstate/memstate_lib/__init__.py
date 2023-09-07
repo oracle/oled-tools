@@ -29,6 +29,7 @@ from .buddyinfo import Buddyinfo
 from .logfile import Logfile
 from .hugepages import Hugepages
 from .meminfo import Meminfo
+from .rss import Rss
 from .numa import Numa
 from .pss import Pss
 from .slabinfo import Slabinfo

@@ -11,13 +11,16 @@ oled memstate [-h] [-p] [-w] [-s [FILE]] [-n [FILE]] [-a] [-v] [-f [INTERVAL]]
 The memstate tool gathers data about memory usage on the system where it's run,
 and analyzes the raw data to compute various statistics, including total memory
 used by kernel/userspace allocations, a list of top 10 processes consuming most
-memory, the 10 biggest slab caches, the top 10 swap space consumers, etc. It
-can also display per-process memory usage, including how the allocations are
+memory (RSS), the 10 biggest slab caches, the top 10 swap space consumers, etc. It
+can also display per-process memory usage (PSS), including how the allocations are
 split across the NUMA nodes (if applicable). The tool checks, and prints warnings
 for, any abnormalities detected; for instance -  excessive slab growth or large
 page tables, NUMA imbalance, or invalid vm.min_free_kbytes config. The tool also
 supports an offline mode to analyze slab and NUMA stats - see OPTIONS for more
 details.
+
+Note: RSS is not an accurate metric to measure per-process memory usage. For
+more accurate values, use the -p option, which extracts per-process PSS values.
 
 .SH OPTIONS
 .TP

@@ -42,6 +42,7 @@ install:
 	install -m 755 $(CURLIB)/meminfo.py $(MEMSTATE_LIB)/meminfo.py
 	install -m 755 $(CURLIB)/numa.py $(MEMSTATE_LIB)/numa.py
 	install -m 755 $(CURLIB)/pss.py $(MEMSTATE_LIB)/pss.py
+	install -m 755 $(CURLIB)/rss.py $(MEMSTATE_LIB)/rss.py
 	install -m 755 $(CURLIB)/slabinfo.py $(MEMSTATE_LIB)/slabinfo.py
 	install -m 755 $(CURLIB)/swap.py $(MEMSTATE_LIB)/swap.py
 	gzip -c $(CURDIR)/memstate.man > $(MANDIR)/oled-memstate.8.gz
@@ -59,6 +60,7 @@ uninstall:
 	rm -f $(MEMSTATE_LIB)/meminfo.py
 	rm -f $(MEMSTATE_LIB)/numa.py
 	rm -f $(MEMSTATE_LIB)/pss.py
+	rm -f $(MEMSTATE_LIB)/rss.py
 	rm -f $(MEMSTATE_LIB)/slabinfo.py
 	rm -f $(MEMSTATE_LIB)/swap.py
 	rm -f $(MEMSTATE_LIB)/__init__.py

@@ -107,15 +107,16 @@ class Pss(Base):
             f"{self.__get_total_pss_gb(pss_sorted)} GB")
 
     def memstate_check_pss(self, num=constants.NUM_TOP_MEM_USERS):
-        """Check per-process memory usage."""
+        """Check per-process memory usage (PSS)."""
         print(
             "Note: this processing can take a while - depending on the "
             "system config, load, etc.\nYou might also notice this script "
             "consuming > 95% CPU during this run, for a few minutes.\nSo it "
             "is not recommended to invoke -p/--pss too often.\n")
         if num == constants.NO_LIMIT:
-            self.print_header_l1("Process memory usage")
+            hdr = "Process memory usage (metric: PSS)"
         else:
-            self.print_header_l1("Top " + str(num) + " memory consumers")
+            hdr = f"Top {num} memory consumers (metric: PSS)"
+        self.print_header_l1(hdr)
         self.__display_top_proc_pss(num)
         print("")
