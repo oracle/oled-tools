@@ -90,17 +90,17 @@ class Base:
     @staticmethod
     def print_error(warn_str):
         """Print an error message."""
-        print("[Error] " + warn_str)
+        print(f"{'[ERR] ': <8}{warn_str}")
 
     @staticmethod
     def print_warn(err_str):
         """Print a warning message."""
-        print("[Warning] " + err_str)
+        print(f"{'[WARN] ': <8}{err_str}")
 
     @staticmethod
     def print_info(msg_str):
         """Print an info message."""
-        print("[OK] " + msg_str)
+        print(f"{'[OK] ': <8}{msg_str}")
 
     def create_memstate_debug_log(self):
         """Create memstate debug log file."""
@@ -155,27 +155,12 @@ class Base:
     @staticmethod
     def print_pretty_gb(str_msg, int_arg):
         """Print GB value in a pretty format."""
-        print(f"{str_msg: <30}:{int_arg: >8} GB")
+        print(f"{str_msg: <30}{int_arg: >12}")
 
     @staticmethod
     def print_pretty_kb(str_msg, int_arg):
         """Print KB value in a pretty format."""
-        print(f"{str_msg: <30}:{int_arg: >12} KB")
-
-    @staticmethod
-    def print_header_l0(str_msg):
-        """Print a level 0 header."""
-        print("==" * 8 + " " + str_msg + " " + "==" * 8)
-
-    @staticmethod
-    def print_header_l1(str_msg):
-        """Print a level 1 header."""
-        print("=" * 4 + " " + str_msg + " " + "=" * 4)
-
-    @staticmethod
-    def print_header_l2(str_msg):
-        """Print a level 2 header."""
-        print("=" * 2 + " " + str_msg + " " + "=" * 2)
+        print(f"{str_msg: <30}{int_arg: >12}")
 
     @staticmethod
     def get_kernel_ver():
@@ -188,7 +173,7 @@ class Base:
 
         If current time could not be determined, return "Unknown".
         """
-        current_time = datetime.now().strftime("<%m/%d/%Y %H:%M:%S>")
+        current_time = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
         if not current_time:
             current_time = "Unknown"
         return current_time.strip()

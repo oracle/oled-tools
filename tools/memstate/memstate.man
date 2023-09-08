@@ -31,7 +31,7 @@ can be passed to the tool.
 
 .TP
 -p [PID], --pss [PID]
-     Displays per-process memory usage, for the top 10 process
+    Displays per-process memory usage, for the top 10 process
 memory consumers. This gathers data from /proc/<pid>/smaps_rollup files and
 sorts them, to display the most memory intensive processes on the system. It
 displays the following metrics per process: PSS, RSS, private, swap-pss.
@@ -45,7 +45,7 @@ memory mappings and usage summary for that process only, extracted from
 
 .TP
 -s [FILE], --slab [FILE]
-     Analyzes/displays slab usage. It takes an optional file
+    Analyzes/displays slab usage. It takes an optional file
 input, which should contain the output of 'cat /proc/slabinfo'. This can be
 used to analyze the slab usage on another system offline. To display the
 slab usage on the current/running system, simply omit the file input. This
@@ -61,7 +61,8 @@ meminfo data from /sys/devices/system/node/nodeX/meminfo. When combined with
 system and computes their total memory allocations on each NUMA node, and
 displays them in a sorted fashion. Note that this processing can be quite
 expensive w.r.t. time taken/CPU cycles, esp. if run on a heavily-loaded system.
-So it is not recommended to invoke -n/--numa with -v/--verbose too often.
+Therefore, it is not recommended to invoke -n/--numa with -v/--verbose too
+often.
 
 It also takes an optional file input (this can be used for offline processing),
 which should contain the contents of /proc/*/numa_maps files as well as
@@ -69,7 +70,7 @@ which should contain the contents of /proc/*/numa_maps files as well as
 script:
 
 PROCS=/proc/*; for p in $PROCS; do COMM=$(cat $p/comm); \
-	MAPS=$(cat $p/numa_maps); echo "$COMM:"; echo "$MAPS"; done
+	MAPS=$(cat $p/numa_maps); echo "$COMM(${p##*/}):"; echo "$MAPS"; done
 
 and redirecting it to a file. This file can be passed as input, with
 -n, to analyze and display per-NUMA node memory allocation statistics for each

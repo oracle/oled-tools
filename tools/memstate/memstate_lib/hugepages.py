@@ -119,6 +119,8 @@ class Hugepages(Base):
         See get_nr_hugepages_matrix_kb() for details of the information
         returned.
         """
-        self.__read_nr_hugepages()
+
+        if len(self.hp_free_dict) == 0:
+            self.__read_nr_hugepages()
         hp_dict = self.hp_free_dict
         return self.__create_matrix(hp_dict)

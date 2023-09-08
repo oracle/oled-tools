@@ -88,8 +88,9 @@ class Swap(Base):
     def memstate_check_swap(self, num=constants.NUM_TOP_SWAP_USERS):
         """Check state of swap."""
         if num == constants.NO_LIMIT:
-            self.print_header_l1("Swap users")
+            hdr = "SWAP USERS:"
         else:
-            self.print_header_l1("Top " + str(num) + " swap space consumers")
+            hdr = f"TOP {num} SWAP SPACE CONSUMERS:"
+        print(hdr)
         self.__display_top_vmswap(num)
         print("")

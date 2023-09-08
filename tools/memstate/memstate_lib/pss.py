@@ -112,12 +112,13 @@ class Pss(Base):
         for pid in pss_sorted:
             if num != constants.NO_LIMIT and num_printed >= num:
                 break
-            p_comm_str = self.read_text_file(
+            comm_str = self.read_text_file(
                 f"/proc/{pid}/comm", on_error=str(pid))
-            p_comm_str = f"{p_comm_str.strip()}({pid})"
-            print(f"{p_comm_str: <30} {pss_sorted[pid]: >12} KB"
-                  f"{rss[pid]: > 12} KB {priv[pid]: > 12} KB"
-                  f"{swap_pss[pid]: > 12} KB")
+            comm_str = f"{comm_str.strip()}({pid})"
+            print(
+                f"{comm_str: <30}{pss_sorted[pid]: >16}"
+                f"{rss[pid]: >16}{priv[pid]: >16}"
+                f"{swap_pss[pid]: >16}")
             num_printed += 1
         print("")
         print(
@@ -218,7 +219,7 @@ class Pss(Base):
                 print(
                     f"{addr_range: <28}{pss_arr[key]: >16}"
                     f"{shared_arr[key]: >16}{priv_arr[key]: >16}"
-                    f"{hugetlb_arr[key]: >16}{' '.center(12)}{map_str: <32}")
+                    f"{hugetlb_arr[key]: >16}{' ': ^12}{map_str: <32}")
 
         if print_vmas == 0:
             print("None")
@@ -228,18 +229,13 @@ class Pss(Base):
         if pid != constants.DEFAULT_SHOW_PSS_SUMMARY:
             self.__display_single_process_mem(pid)
             return
-        print(
-            "Note: this processing can take a while - depending on the "
-            "system config, load, etc.\nYou might also notice this script "
-            "consuming > 95% CPU during this run, for a few minutes.\nSo it "
-            "is not recommended to invoke -p/--pss too often.\n")
         if num == constants.NO_LIMIT:
-            hdr = "Process memory usage (metric: PSS)"
+            hdr = "PROCESS MEMORY USAGE (in KB, ordered by PSS):"
         else:
-            hdr = f"Top {num} memory consumers (metric: PSS)"
-        self.print_header_l1(hdr)
+            hdr = f"TOP {num} MEMORY CONSUMERS (in KB, ordered by PSS):"
+        print(hdr)
         print(
-            f"{'PROCESS(PID)': <30}{'PSS': >16}{'RSS': >15}"
-            f"{'PRIVATE': >16}{'SWAP_PSS': >15}")
+            f"{'PROCESS(PID)': <30}{'PSS': >16}{'RSS': >16}"
+            f"{'PRIVATE': >16}{'SWAP': >16}")
         self.__display_top_proc_pss(num)
         print("")

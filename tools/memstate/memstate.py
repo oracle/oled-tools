@@ -55,15 +55,14 @@ class Memstate(Base):
         self.print_header = True
 
     def print_time(self):
-        """Print time ('zzz <time>')."""
-        print("zzz " + self.get_current_time())
+        """Print time"""
+        print(f"{'TIME: ': >12}{self.get_current_time()}")
 
     def memstate_header(self):
         """Print memstate header to stdout if it has not been printed yet."""
         if self.print_header:
-            self.print_header_l0("Gathering memory usage data")
-            print("Kernel version: " + self.get_kernel_ver())
-            print("Hostname: " + self.get_hostname())
+            print(f"{'KERNEL: ': >12}{self.get_kernel_ver()}")
+            print(f"{'HOSTNAME: ': >12}{self.get_hostname()}")
             self.print_time()
             print("")
             self.print_header = False
@@ -118,7 +117,7 @@ class Memstate(Base):
         """
         Check the various memory usage stats against the acceptable thresholds.
         """
-        self.print_header_l1("Health checks")
+        print("HEALTH CHECKS:")
         self.check_sysctl_config()
         self.meminfo.check_pagetables_size()
         self.check_rds_cache_size()
@@ -194,6 +193,10 @@ class Memstate(Base):
             print("")
             self.print_warn(
                 f"vm.watermark_scale_factor has been increased to {wsf}.")
+        else:
+            print("")
+            self.print_info(
+                f"The value of vm.watermark_scale_factor is: {wsf}.")
 
     def check_rds_cache_size(self):
         """Check that RDS cache size is not too large.
@@ -208,6 +211,10 @@ class Memstate(Base):
         if (rds_size_gb > 0 and rds_size_gb >= max_rds_size):
             print("")
             self.print_warn(f"RDS receive cache is large: {rds_size_gb} GB.")
+        elif rds_size_gb > 0:
+            print("")
+            self.print_info(
+                f"RDS receive cache size is: {rds_size_gb} GB.")
 
     def check_for_pmem(self):
         """

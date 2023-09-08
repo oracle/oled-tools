@@ -109,20 +109,18 @@ class Meminfo(Base):
 
     def print_pretty_gb_l1(self, str_msg, int_arg):
         """Pretty-print a GBs value with 1-level indentation."""
-        printstr = (" " * 4) + str_msg
+        printstr = (" " * 2) + str_msg
         self.print_pretty_gb(printstr, int_arg)
 
     def print_pretty_gb_l2(self, str_msg, int_arg):
         """Pretty-print a GBs value with 2-level indentation."""
-        printstr = (" " * 8) + str_msg
+        printstr = (" " * 4) + str_msg
         self.print_pretty_gb(printstr, int_arg)
 
     def __print_hugepages_summary(self):
         hp_nr = self.hugepages.get_nr_hugepages_matrix_kb()
         for key, val in hp_nr.items():
-            hp_nr_total = 0
-            for i in val:
-                hp_nr_total = hp_nr_total + int(i)
+            hp_nr_total = sum(val)
             if hp_nr_total:
                 self.print_pretty_gb_l1(
                     f"Total Hugepages ({key} KB)",
@@ -137,7 +135,7 @@ class Meminfo(Base):
 
     def display_usage_summary(self):
         """Report several memory metrics."""
-        # pylint: disable=too-many-statements,too-many-branches
+        # pylint: disable=too-many-statements,too-many-branches,too-many-locals
 
         mem_free = 0
         cached = 0
@@ -155,7 +153,7 @@ class Meminfo(Base):
             self.print_cmd_err("cat /proc/meminfo")
             return
 
-        self.print_header_l1("Memory usage summary")
+        print("MEMORY USAGE SUMMARY (in GB):")
         for line in data.splitlines():
             if line.startswith("MemFree:"):
                 mem_free = self.__meminfo_get_value_gb(line)
@@ -232,6 +230,10 @@ class Meminfo(Base):
                 "Page tables are larger than expected "
                 f"({self.pagetables_gb} GB); if this is an Exadata system, "
                 "check if the DB parameter USE_LARGE_PAGES is set to ONLY.")
+        else:
+            print("")
+            self.print_info(
+                f"Page tables size is: {self.pagetables_gb} GB.")
 
     def check_unaccounted_memory(self):
         """Emit a warning if unaccounted memory is larger than a threshold."""
@@ -243,6 +245,10 @@ class Meminfo(Base):
             self.print_warn(
                 "Unaccounted kernel memory use is larger than expected: "
                 f"{self.unaccounted_gb} GB.")
+        elif self.unaccounted_gb > 0:
+            print("")
+            self.print_info(
+                f"Unaccounted kernel memory is: {self.unaccounted_gb} GB.")
 
     def check_committed_as(self):
         """

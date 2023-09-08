@@ -43,14 +43,13 @@ class Buddyinfo(Base):
         pgti_header = data[0]
         pgti_body = data[1:]
 
-        print("")
-        self.print_header_l2("pagetypeinfo")
-        print(pgti_header)
+        print("\nPagetypeinfo:")
+        print(f"  {pgti_header}")
 
         regex = re.compile("Normal.*(Unmovable|Movable|Reclaimable)")
         for line in pgti_body:
             if regex.search(line):
-                print(line)
+                print(f"  {line}")
 
     def __display_zoneinfo(self):
         interesting = ['Node', 'free', 'min', 'low', 'high']
@@ -58,11 +57,10 @@ class Buddyinfo(Base):
         if data == "":
             self.print_error("Unable to read file /proc/zoneinfo")
             return
-        print("")
-        self.print_header_l2("zoneinfo")
+        print("\nZoneinfo:")
         for line in data.splitlines():
             if any(word in line.split() for word in interesting):
-                print(line)
+                print(f"  {line}")
 
     def check_fragmentation_status(self, num_numa_nodes=1):
         """
@@ -78,9 +76,8 @@ class Buddyinfo(Base):
         if data == "":
             self.print_cmd_err("cat /proc/buddyinfo")
             return
-        print("")
-        self.print_header_l2("buddyinfo")
-        print("(Low orders are 0-3, high orders are 4-10).")
+        print("\nBuddyinfo:")
+        print("  (Low orders are 0-3, high orders are 4-10).")
         for line in data.splitlines():
             # We don't care about DMA or DMA32 zones.
             if "Normal" in line:
@@ -110,9 +107,9 @@ class Buddyinfo(Base):
                     if num_numa_nodes > 1:
                         fragmented_nodes.append(current_node)
 
-                print(line)
-                print(f"Total: {total} KB;\t\tLow: {low} KB ({low_percent}%);"
-                      f"\t\tHigh: {high} KB ({high_percent}%)")
+                print(f"  {line}")
+                print(f"  Total: {total} KB;\t\tLow: {low} KB ({low_percent}%)"
+                      f";\t\tHigh: {high} KB ({high_percent}%)")
         if fragmented is True:
             print("")
             if num_numa_nodes > 1:
@@ -143,10 +140,9 @@ class Buddyinfo(Base):
             'kswapd_high_wmark_hit_quickly', 'drop_', 'oom_',
             'zone_reclaim_failed'
         )
-        print("")
-        self.print_header_l2("vmstat")
+        print("\nVmstat:")
         for line in vmstat.splitlines():
             if any(line.startswith(word) for word in interesting):
-                print(line)
+                print(f"  {line}")
         print("")
         return

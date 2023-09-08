@@ -96,16 +96,17 @@ class Slabinfo(Base):
             self.print_error("Slab caches list unavailable!")
             return
         num_printed = 0
-        if num != constants.NO_LIMIT:
-            for slab, size_kb in slabs_list.items():
-                if num_printed >= num or self.convert_kb_to_gb(size_kb) <= 0:
-                    break
-                self.print_pretty_gb(slab, self.convert_kb_to_gb(size_kb))
-                num_printed += 1
-        else:  # NO_LIMIT
-            for slab, size_kb in slabs_list.items():
-                if size_kb != 0:
-                    self.print_pretty_kb(slab, size_kb)
+        for slab, size_kb in slabs_list.items():
+            if num != constants.NO_LIMIT and num_printed >= num:
+                break
+            if size_kb > 0:
+                self.print_pretty_kb(slab, size_kb)
+            num_printed += 1
+        if num == constants.NO_LIMIT:
+            print("")
+            print(
+                "Total memory used by all slab caches: "
+                f"{self.__get_total_slab_size_gb(slabs_list)} GB")
 
     def __get_total_slab_size_gb(self, slabs_list=None):
         if slabs_list is None:
@@ -128,10 +129,7 @@ class Slabinfo(Base):
             self.print_error("Slabinfo data unavailable!")
             return
         slab_list = self.__get_ordered_slab_caches()
-        if self.input_file:
-            slab_total_gb = self.__get_total_slab_size_gb(slab_list)
-            print(f"Total size of all slab caches is {slab_total_gb} GB.")
-        else:
+        if not self.input_file:
             meminfo = Meminfo()
             slab_total_gb = meminfo.get_total_slab_gb()
             if (slab_total_gb >=
@@ -144,8 +142,9 @@ class Slabinfo(Base):
     def memstate_check_slab(self, num=constants.NUM_TOP_SLAB_CACHES):
         """Check state of slab."""
         if num == constants.NO_LIMIT:
-            self.print_header_l1("Slab caches")
+            hdr = "SLAB CACHES (in KB):"
         else:
-            self.print_header_l1("Top " + str(num) + " slab caches")
+            hdr = f"TOP {num} SLAB CACHES (in KB):"
+        print(hdr)
         self.__check_slab_usage(num)
         print("")

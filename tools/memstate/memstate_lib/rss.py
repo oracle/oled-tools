@@ -81,9 +81,10 @@ class Rss(Base):
     def memstate_check_rss(self, num=constants.NUM_TOP_MEM_USERS):
         """Check per-process memory usage (RSS)."""
         if num == constants.NO_LIMIT:
-            hdr = "Process memory usage (metric: RSS)"
+            hdr = "PROCESS MEMORY USAGE (in KB):"
         else:
-            hdr = f"Top {num} memory consumers (metric: RSS)"
-        self.print_header_l1(hdr)
+            hdr = f"TOP {num} MEMORY CONSUMERS (in KB):"
+        print(hdr)
+        print(f"{'PROCESS(PID)': <30}{'RSS': >12}")
         self.__display_top_vmrss(num)
         print("")
