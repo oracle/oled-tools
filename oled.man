@@ -37,15 +37,15 @@ its usage.
 .TP
 
 # oled memstate -h
-usage: oled memstate [-h] [-p] [-w] [-s [FILE]] [-n [FILE]] [-a] [-v]
+usage: oled memstate [-h] [-p [PID]] [-s [FILE]] [-n [FILE]] [-a] [-v]
                      [-f [INTERVAL]]
 
 memstate: Capture and analyze memory usage data on this system.
 
 optional arguments:
   -h, --help            show this help message and exit
-  -p, --pss             display per-process memory usage
-  -w, --swap            display per-process swap usage
+  -p [PID], --pss [PID]
+                        display per-process memory usage
   -s [FILE], --slab [FILE]
                         analyze/display slab usage
   -n [FILE], --numa [FILE]
