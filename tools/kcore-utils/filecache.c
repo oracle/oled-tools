@@ -369,7 +369,7 @@ static void show_help()
 	MSG("   -h, --help                 show this message\n");
 	MSG("   -v, --version              show version\n");
 	MSG("\n");
-	MSG("Note: Works on Oracle UEK4/UEK5/UEK6 kernels only. Check the man page for more information.\n");
+	MSG("Note: Only supports UEK4/UEK5/UEK6 kernels on x86-64.\n");
 	MSG("\n");
 }
 

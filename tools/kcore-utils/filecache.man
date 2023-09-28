@@ -15,6 +15,9 @@ of the file on disk).
 The page cache can hold too many small files, but most of them are not very
 interesting for debug purposes since they don't use too much memory.
 
+Note that this command is only supported on UEK4, UEK5 and UEK6 kernels on
+the x86-64 architecture.
+
 Sample output:
 .TS
 l l l l .

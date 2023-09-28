@@ -19,8 +19,13 @@
 # questions.
 
 VERSION="0.6"
+ARCH := $(shell uname -m)
 
-subdirs := tools/lkce tools/kcore-utils tools/memstate tools/kstack tools/syswatch tools/scanfs
+ifeq ($(ARCH), x86_64)
+	subdirs := tools/lkce tools/kcore-utils tools/memstate tools/kstack tools/syswatch tools/scanfs
+else
+	subdirs := tools/lkce tools/memstate tools/kstack tools/syswatch tools/scanfs
+endif
 subdirs := $(subdirs) scripts
 rev_subdirs := $(shell echo -n "$(subdirs) " | tac -s ' ')
 OLEDDIR := $(DESTDIR)/etc/oled

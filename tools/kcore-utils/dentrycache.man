@@ -16,6 +16,9 @@ The tool dumps file paths associated with active dentries, on live systems.
 By default, it lists 10000 dentry paths - one dentry per line. These are not
 sorted or in any particular order.
 
+Note that this command is only supported on UEK4, UEK5 and UEK6 kernels on
+the x86-64 architecture.
+
 Sample output:
 .TS
 l l l .

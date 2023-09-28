@@ -15,8 +15,10 @@ corresponding man pages for more details.
 - memstate: Captures and analyzes various memory usage statistics on the
   running system
 - filecache: List the paths of the biggest files present in the page cache
+  (note: this is present only on the x86-64 architecture)
 - dentrycache: Lists a sample of file paths which have active dentries in the
   dentry hash table
+  (note: this is present only on the x86-64 architecture)
 - kstack: Collects the kernel stack trace for selected processes, based on
   status or PID
 - syswatch: Execute user-provided commands when CPU utilization reaches a
@@ -49,8 +51,8 @@ $ make
 $ make install
 ```
 
-`lkce` requires additional setup the firs time, it's recommended to run
-following command after oled-tools is installed:
+`lkce` requires additional setup the first time - it is recommended to run
+the following command after oled-tools is installed:
 
 ```bash
 $ [ -f /etc/oled/lkce/lkce.conf ] || sudo oled lkce configure --default
