@@ -187,6 +187,7 @@ class Numa(Base):
             sorted(nlist.items(), key=lambda x: x[1], reverse=True))
         comm_ignore = []
         num_printed = 0
+        page_size_kb = Base.get_page_size() / constants.ONE_KB
         self.__print_numa_maps_headers()
         for elem in nlist_sorted:
             if num != constants.NO_LIMIT and num_printed >= num:
@@ -210,7 +211,7 @@ class Numa(Base):
                     print(f"{comm: <30}", end=' ')
                     hdr_printed = True
                     comm_ignore.append(comm)
-                value_kb = int(nlist_sorted[pid_elem]) * constants.PAGE_SIZE_KB
+                value_kb = int(nlist_sorted[pid_elem]) * page_size_kb
                 print(f"{value_kb: >14}", end=" ")
             print("")
             num_printed += 1

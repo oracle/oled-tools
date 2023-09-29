@@ -88,6 +88,15 @@ class Base:
         return output
 
     @staticmethod
+    def get_page_size():
+        """Get the default page size on the current system."""
+        try:
+            return os.sysconf("SC_PAGE_SIZE")
+        except ValueError:
+            print("Unable to read the PAGE_SIZE of this system; exiting.\n")
+            sys.exit(1)
+
+    @staticmethod
     def print_error(warn_str):
         """Print an error message."""
         print(f"{'[ERR] ': <8}{warn_str}")
@@ -149,7 +158,7 @@ class Base:
     def convert_bytes_to_numpages(val_in_bytes):
         """Return number of bytes to number pages."""
         val_in_4k = \
-            float(val_in_bytes) / (constants.PAGE_SIZE_KB * constants.ONE_KB)
+            float(val_in_bytes) / (Base.get_page_size() * constants.ONE_KB)
         return round(val_in_4k, 1)
 
     @staticmethod
@@ -207,7 +216,7 @@ class Base:
         For instance: if order = 3, return 32 (KB).
         """
         pages = 2**order
-        return pages * constants.PAGE_SIZE_KB
+        return pages * Base.get_page_size() / constants.ONE_KB
 
 
 class LockFile(Base):

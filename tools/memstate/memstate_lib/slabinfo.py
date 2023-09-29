@@ -77,6 +77,7 @@ class Slabinfo(Base):
             return None
         slab_list = {}
         slab_caches_sorted = {}
+        page_size_kb = Base.get_page_size() / constants.ONE_KB
         for line in self.data.splitlines():
             if len(line.split()) != 16:
                 continue
@@ -84,8 +85,7 @@ class Slabinfo(Base):
             c_num_slabs = self.__slabinfo_get_num_slabs(line)
             c_pages_per_slab = self.__slabinfo_get_pages_per_slab(line)
             slab_list[c_name] = (
-                int(c_num_slabs) * int(c_pages_per_slab) *
-                constants.PAGE_SIZE_KB)
+                int(c_num_slabs) * int(c_pages_per_slab) * page_size_kb)
 
         slab_caches_sorted = OrderedDict(
             sorted(slab_list.items(), key=lambda x: x[1], reverse=True))
