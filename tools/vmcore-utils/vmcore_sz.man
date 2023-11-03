@@ -1,0 +1,69 @@
+.TH OLED VMCORE_SZ 8 "Sep 2023" "Oracle Linux Enhanced Diagnostics" "0.6"
+
+.SH NAME
+oled vmcore_sz - Estimating vmcore size before kernel dump.
+
+.SH SYNOPSIS
+oled vmcore_sz [-h] [-d DUMP_LEVEL] 
+
+.SH DESCRIPTION
+The vmcore_sz takes the dump_level as an argument and estimates the
+vmcore size if a kernel dump is obtained at that moment. It displays
+the total number of pages, pages need to be excluded depending on
+the dump level and the expected VMcore size in bytes. If the dump
+level is not specified, the default configured in "/etc/kdump.conf"
+will be used.
+
+oled vmcore_sz takes dump level (in range 0 to 31) as an argument
+to display the expected VMcore size in bytes.
+
+.SH EXAMPLE
+#oled vmcore_sz
+.PP
+Dump level is not specified. Using default/configured - [31]
+.PP
+----------------------------------------------
+.br
+Dump level = 31
+.br
+Exclude zero pages : 56568
+.br
+Exclude non private cache : 1594405
+.br
+Exclude private cache : 34
+.br
+Exclude user pages : 143813
+.br
+Exclude free pages : 2076424
+.PP
+Total Pages : 4134552
+.br
+Pages to be dumped : 263308
+.PP
+----------------------------------------------
+.br
+Expected vmcore size in bytes : 1078509568
+.br
+----------------------------------------------
+.br
+
+.SH OPTIONS
+.TP
+-h, --help
+	Displays a help message for vmvmcore_sz command.
+
+.TP
+-d DUMP_LEVEL, --dump_level DUMP_LEVEL
+	Calculate vmcore size based on user provided DUMP_LEVEL. DUMP_LEVEL is an integer in range 0..31
+
+.SH REPORTING BUGS
+.TP
+	Please contact Oracle Linux Support to report any bugs for OLED tools.
+
+.SH AUTHOR
+.TP
+	Partha Sarathi Satapathy <partha.satapathy@oracle.com>
+
+.SH CO-AUTHOR
+.TP
+	Srikanth C S <srikanth.c.s@oracle.com>

@@ -24,6 +24,7 @@ corresponding man pages for more details.
 - syswatch: Execute user-provided commands when CPU utilization reaches a
   threshold
 - scanfs: Scan KVM images for corruption, supports XFS and EXT4
+- vmcore-utils: Estimating vmcore size before kernel dump
 
 ## Installation
 
