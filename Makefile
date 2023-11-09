@@ -18,7 +18,7 @@
 # or visit www.oracle.com if you need additional information or have any
 # questions.
 
-VERSION="0.6"
+VERSION="0.7"
 ARCH := $(shell uname -m)
 
 ifeq ($(ARCH), x86_64)

@@ -29,7 +29,7 @@ from typing import Sequence
 
 # Oracle Linux Enhanced Diagnostic Tools
 MAJOR = "0"
-MINOR = "6"
+MINOR = "7"
 
 BINDIR = "/usr/libexec/oled-tools"
 

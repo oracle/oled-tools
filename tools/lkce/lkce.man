@@ -1,4 +1,4 @@
-.TH OLED LKCE 8 "Jul 2021" "Oracle Linux Enhanced Diagnostics" "0.5"
+.TH OLED LKCE 8 "Jul 2021" "Oracle Linux Enhanced Diagnostics"
 
 .SH NAME
 oled lkce \- Linux Kernel Core Extractor

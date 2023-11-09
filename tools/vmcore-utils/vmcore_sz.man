@@ -1,4 +1,4 @@
-.TH OLED VMCORE_SZ 8 "Sep 2023" "Oracle Linux Enhanced Diagnostics" "0.6"
+.TH OLED VMCORE_SZ 8 "Sep 2023" "Oracle Linux Enhanced Diagnostics"
 
 .SH NAME
 oled vmcore_sz - Estimating vmcore size before kernel dump.

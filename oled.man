@@ -1,4 +1,4 @@
-.TH OLED 8 "Nov 2022" "Oracle Linux Enhanced Diagnostics" "0.6"
+.TH OLED 8 "Nov 2022" "Oracle Linux Enhanced Diagnostics"
 
 .SH NAME
 oled - Interface to invoke other diagnostic tools

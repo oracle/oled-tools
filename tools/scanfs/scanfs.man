@@ -1,4 +1,4 @@
-.TH OLED SCANFS 8 "May 2023" "Oracle Linux Enhanced Diagnostics" "0.5"
+.TH OLED SCANFS 8 "May 2023" "Oracle Linux Enhanced Diagnostics"
 
 .SH NAME
 oled scanfs - Scan KVM images for corruption. Supports XFS and EXT4 filesystems.
