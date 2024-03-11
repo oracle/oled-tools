@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2023, Oracle and/or its affiliates.
+# Copyright (c) 2024, Oracle and/or its affiliates.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -190,30 +190,19 @@ def collect_procs_info(
 
 def write_proc_infos(
         output_fd: TextIO,
-        infos: Iterable[Tuple[int, str, str, int, str]],
-        nr_d_procs_alert: int) -> None:
+        infos: Iterable[Tuple[int, str, str, int, str]]) -> None:
     """Write processes info to the given file descriptor.
 
-    infos is a value as returned by collect_procs_info().  If nr_d_procs_alert
-    is > 0, write a warning message into the syslog if the number of processes
-    in state "D" is >= than this number.
+    infos is a value as returned by collect_procs_info().
     """
 
     curr_date = time.localtime()
 
-    nr_d_procs = 0
     stacks: Dict[str, List[Any]] = {}
 
     # group all processes with same stack
     for *vals, stack in infos:
         stacks.setdefault(stack, []).append(vals)
-
-        if vals[1] == "D":
-            nr_d_procs += 1
-
-    if 0 < nr_d_procs_alert <= nr_d_procs:
-        syslog.syslog(
-            syslog.LOG_WARNING, f"Processes in D state: {nr_d_procs}")
 
     curr_date_str = time.strftime("%a %b %d %H:%M:%S %Z %Y", curr_date)
     output_fd.write(f"zzz <{curr_date_str} - {socket.gethostname()}\n\n")
@@ -291,9 +280,6 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         "-D", dest="states", action='append_const', const="D",
         help="Processes waiting on I/O or a lock.")
     process_group.add_argument(
-        "-I", dest="states", action='append_const', const="I",
-        help="Idle kernel threads.")
-    process_group.add_argument(
         "-R", dest="states", action='append_const', const="R",
         help="Running processes.")
     process_group.add_argument(
@@ -338,13 +324,6 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
               "If the target file system is at or above this limit, then the "
               "program will refuse to run."))
 
-    extra_group = parser.add_argument_group("EXTRA OPTIONS")
-    extra_group.add_argument(
-        "-s", dest="d_processes", metavar="NUMBER_OF_HUNG_PROCESSES", type=int,
-        default=0,
-        help=("Alert to syslog if there are >= of these number of hung "
-              "processes present."))
-
     options = parser.parse_args(args)
 
     if not options.states and not options.pids and not options.all:
@@ -381,8 +360,7 @@ def main(args: Sequence[str]) -> None:
             # foreground run; dump stacks once and exit
             write_proc_infos(
                 sys.stdout,
-                collect_procs_info(options.all, options.pids, options.states),
-                options.d_processes)
+                collect_procs_info(options.all, options.pids, options.states))
             return
 
         #
@@ -421,7 +399,7 @@ def main(args: Sequence[str]) -> None:
                 options.all, options.pids, options.states)
 
             with open(output_path, "a") as output_fd:
-                write_proc_infos(output_fd, procs_infos, options.d_processes)
+                write_proc_infos(output_fd, procs_infos)
 
             time.sleep(options.sleep)
 

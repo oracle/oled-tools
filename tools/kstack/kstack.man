@@ -13,13 +13,12 @@ kstack \- Collect the kernel stack trace for selected processes.
 [ \fB\-m \fIMAX_SIZE \fR]
 [ \fB\-n \fINUMBER_OF_FILES \fR]
 [ \fB\-x \fIMAX_SPACE \fR] ]
-[ \fB\-s \fINUMBER_OF_HUNG_PROCESSES \fR]
 .SH DESCRIPTION
 \fBkstack\fR is used to capture the kernel stack trace of a selected process or group of processes.  \fBkstack\fR first captures all needed data from the /proc file system and then parses the data based on the selection criteria.  The data is grouped by stack, so that duplicate stacks are not printed, and processes that share a stack are displayed together.  All of the \fBSELECTION OPTIONS\fR, with the exception of \fB-a\fR, can be combined. See \fBEXAMPLES\fR below.
 
 \fBkstack\fR can be run in foreground or background mode.  In foreground mode, the default, a single sample will be displayed to stdout.  In background mode, \fB-b\fR, the tool will run for a specified amount of time and gather the kernel stacks at regular intervals.  The data will be written to files in /var/oled/kstack.  The \fB-d\fR argument can be used to redirect the files to a different location.  The log files written in background mode can be further controlled using using the \fB-m\fR, \fB-n\fR, and \fB-x\fR options.
 
-Because most of the time it will be processes in D state that we are interested in, \fBkstack\fR has an option to print a warning to syslog if a certain number of D state processes are exceeded.  The \fB-s\fR option will specify the number of D state processes to trigger on.  If you specify \fB-s\fR 500, then if there are 500 or more processes waiting on I/O or a lock, a warning will be sent to syslog.
+Because most of the time it will be processes in D state that we are interested in, \fBkstack\fR has an option to print a warning to syslog if a certain number of D state processes are exceeded.
 .SH SELECTION OPTIONS
 .TP
 \fB\-a\fR
@@ -27,9 +26,6 @@ All processes.
 .TP
 \fB\-D\fR
 Processes waiting on I/O or a lock.
-.TP
-\fB\-I\fR
-Idle kernel threads.
 .TP
 \fB\-R\fR
 Running processes.
@@ -72,10 +68,6 @@ The number of rotated log files to retain. Default value is 5.
 .TP
 \fB\-x \fIMAX_SPACE\fR
 This is the maximum percent used on the target file system.  The default is 85(%).  If the target file system is at or above this limit, then the program will refuse to run.
-.SH EXTRA OPTIONS
-.TP
-\fB\-s \fINUMBER_OF_PROCESSES\fR
-The max number D state processes to alert on.  The default is 0 (disabled).
 .SH ASSUMPTIONS
 \fBkstack\fR must be run by root.
 .SH EXAMPLES
