@@ -21,11 +21,8 @@
 VERSION="0.7"
 ARCH := $(shell uname -m)
 
-ifeq ($(ARCH), x86_64)
-	subdirs := tools/lkce tools/kcore-utils tools/memstate tools/kstack tools/syswatch tools/scanfs tools/vmcore-utils
-else
-	subdirs := tools/lkce tools/memstate tools/kstack tools/syswatch tools/scanfs tools/vmcore-utils
-endif
+subdirs := tools/lkce tools/memstate tools/kstack tools/syswatch tools/scanfs tools/vmcore-utils
+
 subdirs := $(subdirs) scripts
 rev_subdirs := $(shell echo -n "$(subdirs) " | tac -s ' ')
 OLEDDIR := $(DESTDIR)/etc/oled
