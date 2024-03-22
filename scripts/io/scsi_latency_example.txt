@@ -1,0 +1,59 @@
+Below are sample output, the script gathers SCSI IO statistics given a sampling
+interval and displays the summary ouptut in histogram format.  The script takes
+2 arguments, the first argument is sampling interval in seconds for latency,
+the second argument is latency threshold time in milli-seconds for IO completion.
+
+The left column of the histogram 'value' output is the latency time in milli-seconds
+and the right 'count' are the number of IO commands completed.
+ 
+# scsi-latency.d 5 1   (5 being sample interval, and 1 is threshold for IO completion in ms).
+        sdbz
+           value  ------------- Distribution ------------- count
+              -1 |                                         0
+               0 |@@@@@@@@@@@@@@@@@@@@@@                   16616
+               1 |@@@@@@@@@@@@@@@@                         12411
+               2 |@@                                       1479
+               4 |                                         229
+               8 |                                         10
+              16 |                                         0
+    (ms)
+        sdef
+           value  ------------- Distribution ------------- count
+              -1 |                                         0
+               0 |@@@@@@@@@@@@@@@@@@@@@@@@@@               29766
+               1 |@@@@@@@@@@@@                             14042
+               2 |@                                        1073
+               4 |                                         186
+               8 |                                         2
+              16 |                                         0
+    (ms)
+
+Below is a sample of abnormally higher latency of IO completion.
+
+# scsi-latency.d 5 50
+       2022 Oct 21 15:49:16
+        =======================================================
+        sddb                                 7:0:2:229
+           value  ------------- Distribution ------------- count
+              -1 |                                         0
+               0 |@@                                       2
+               1 |                                         0
+               2 |@@@@@                                    5
+               4 |@                                        1
+               8 |@@                                       2
+              16 |                                         0
+              32 |                                         0
+              64 |                                         0
+             128 |                                         0
+             256 |                                         0
+             512 |                                         0
+            1024 |                                         0
+            2048 |                                         0
+            4096 |                                         0
+            8192 |                                         0
+           16384 |@@@@@@@@@@@@@@@@@@@@@                    20
+           32768 |@@@@@@@@@                                9
+           65536 |                                         0
+    (ms)
+    ========================================================
+
