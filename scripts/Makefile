@@ -50,6 +50,9 @@ install:
 	install -m 755 $(CURDIR)/net/rds_tx_funccount_example.txt $(DOCSDIR)
 	install -m 755 $(CURDIR)/net/ping_lat.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/net/ping_lat_example.txt $(DOCSDIR)
+#io
+	install -m 755 $(CURDIR)/io/nvme_io_comp.d $(SCRIPTSDIR)
+	install -m 755 $(CURDIR)/io/nvme_io_comp_example.txt $(DOCSDIR)
 #core
 	install -m 755 $(CURDIR)/core/spinlock_time.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/core/spinlock_time_example.txt $(DOCSDIR)
