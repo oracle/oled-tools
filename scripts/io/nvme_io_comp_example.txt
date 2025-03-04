@@ -1,88 +1,48 @@
 Below are sample output, the script gathers nvme IO statistics given a sampling
 interval and displays the summary ouptut in histogram format.  The script takes
-2 arguments, the first argument is sampling interval in seconds for latency, 
+2 arguments, the first argument is UEK flag which is needed only for UEK7 eg. "uek7",
 the second argument is interval time in seconds for summary of command completion counts.
 
 The left column of the histogram 'value' output is the latency time in microseconds
 and the right 'count' are the number of IO commands completed.
  
-# ./nvme-io-comp2.d
-dtrace: failed to compile script ./nvme-io-comp2.d: line 15: macro argument $2 is not defined
- 
-# ./nvme-io-comp2.d 2 2
+# ./nvme_io_comp.d
+dtrace: failed to compile script ./nvme_io_comp.d: line 41: macro argument $1 is not defined
+
+#for UEK7
+# ./nvme-io-comp.d -D uek7 5
+
+#for UEK5 and UEK6
+# ./nvme-io-comp.d 5
 Tracing... Hit Ctrl-C to end.
- 
-       Sample Time : 2022 Oct 26 12:03:32
-       ========================================================
-              nvme0n1
+        Sample Time : 2024 Aug  2 06:36:31
+        ========================================================
+                nvme0n1
            value  ------------- Distribution ------------- count
                4 |                                         0
-               8 |@@@                                      1868
-              16 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@          21266
-              32 |@@@@                                     2777
-              64 |@                                        829
-             128 |@                                        615
-             256 |                                         215
-             512 |                                         17
-            1024 |                                         21
-            2048 |                                         12
-            4096 |                                         0
-       (us)
-       ========================================================
- 
-       Sample Time : 2022 Oct 26 12:03:32
-       =======================================================
-       Device   Command      Status            Count
-       =======================================================
-       nvme0n1     FLUSH        Success               143
-       nvme0n1                  Success               360 <- NvME admin cmds
-       nvme0n1     WRITE        Success               13548
-       nvme0n1     READ         Success               13569
-       =======================================================
- 
-Upon fault Injection.
- 
-       Sample Time : 2022 Oct 26 12:04:16
-       ========================================================
-              nvme0n1
-           value  ------------- Distribution ------------- count
-               4 |                                         0
-               8 |@@@                                      1999
-              16 |@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@           19991
-              32 |@@@@                                     2830
-              64 |@                                        701
-             128 |@                                        525
-             256 |                                         193
-             512 |                                         18
-            1024 |                                         30
-            2048 |                                         9
-            4096 |                                         3
-            8192 |                                         0
-           16384 |                                         0
-           32768 |                                         2
-           65536 |                                         0
-       (us)
-       ========================================================
- 
-       Sample Time : 2022 Oct 26 12:04:16
-       =======================================================
-       Device       Command      Status                Count
-       =======================================================
-       nvme0n1     DSM          Success               0
-       nvme0n1     RESV_ACQ     Success               0
-       nvme0n1     RESV_REG     Success               0
-       nvme0n1     RESV_REL     Success               0
-       nvme0n1     RESV_RPT     Success               0
-       nvme0n1     VERIFY       Success               0
-       nvme0n1     WRITE_UNCOR  Success               0
-       nvme0n1     WRITE_ZEROS  Success               0
-       nvme0n1     WRITE        Invalid Opcode        1
-       nvme0n1     READ         Invalid Opcode        2
-       nvme0n1     COMPARE      Success               5
-       nvme0n1     FLUSH        Success               105
-       nvme0n1                  Success               357 <- NvME admin cmds
-       nvme0n1     READ         Success               12754
-       nvme0n1     WRITE        Success               13077
-       =======================================================
-
-
+               8 |                                         853
+              16 |@@@@                                     7176
+              32 |@@@@@@@@@@@@@@@@@@                       33843
+              64 |@@@@@@@@@@@@@@@@                         30693
+             128 |@@                                       3838
+             256 |                                         16
+             512 |                                         10
+            1024 |                                         0
+        (us)
+        ========================================================
+        Device    Command         Status                Count
+        =======================================================
+        nvme0n1     RESV_ACQ     Success                 0
+        nvme0n1     RESV_REG     Success                 0
+        nvme0n1     RESV_REL     Success                 0
+        nvme0n1     DSM          Success                 2
+        nvme0n1     COMPARE      Success                 13
+        nvme0n1     WRITE_UNCOR  Success                 30
+        nvme0n1     VERIFY       Success                 139
+        nvme0n1     READ         Success                 196
+        nvme0n1     WRITE_ZEROS  Success                 1080
+        nvme0n1     RESV_RPT     Success                 1957
+        nvme0n1     WRITE        Success                 19664
+        nvme0n1     UNKNOWN      Success                 24231
+        nvme0n1     FLUSH        Success                 29117
+        =======================================================

@@ -1,0 +1,28 @@
+Purpose: This script tracks a Completion Queue number and prints when there
+is a new completion by tracking completion handler, tasklet, arming and
+poll_cq calls.
+
+Arguments: CQ number
+1) For UEK6 and UEK7
+./cqn_track.d 1038
+2) And provide "-D uek5" as additional argument(for UEK5)
+./cqn_track.d 1038 -D uek5
+
+Output format: each line lists
+For mlx5_add_cq_to_tasklet() probe:
+<date> <time> <probe> <mellanox core CQ Object> <CQ number> <IRQ number> <Time
+since last call>
+
+For ib_uverbs_comp_handler() probe:
+<date> <time> <probe> <IB device> <mellanox core CQ Object> <IB CQ object> <CQ
+number> <IRQ number> <channel FD> <Time since last call>
+
+For probes mlx5_ib_poll_cq() and mlx5_ib_arm_cq():
+<date> <time> <probe> <IB device> <mellanox core CQ Object> <IB CQ object> <CQ
+number> <IRQ number> <Time since last call>
+
+Sample output: Shown below.
+# dtrace -q -Cs cqn_track.d 1038
+DTrace 2.0.0 [Pre-Release with limited functionality]
+2024 May 23 07:08:36:37356627421837:mlx5_ib_poll_cq: ib_dev=ff3b0695efc90000 m_core_cq=ff3b069868d7c0d8 ib_cq=ff3b069868d7c000 cqn=1038 irqn=461 last_call(usecs ago)=0
+2024 May 23 07:08:36:37356627441024:mlx5_ib_arm_cq: ibdev=ff3b0695efc90000 m_core_cq=ff3b069868d7c0d8 ib_cq=ff3b069868d7c000 cqn=1038 irqn=461 last_call(usecs ago)=0

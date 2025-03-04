@@ -1,0 +1,35 @@
+#
+# This is the input file for corelens utility. You can edit this manually
+# to add your own list of corelens arguments.
+#
+-a
+#-M inflight-io
+#-M blockinfo
+#-M ps
+#-M bt
+#-M meminfo
+#-M buddyinfo
+#-M cmdline
+#-M cpuinfo
+#-M dentrycache
+#-M dm
+#-M ext4_dirlock_scan
+#-M filecache
+#-M irq
+#-M lock
+#-M lsmod
+#-M md
+#-M mounts
+#-M rds
+#-M nfsshow
+#-M numastat
+#-M nvme
+#-M partitioninfo
+#-M dmesg
+#-M runq
+#-M scsiinfo
+#-M slabinfo
+#-M smp
+#-M sys
+#-M virtio
+#-M wq

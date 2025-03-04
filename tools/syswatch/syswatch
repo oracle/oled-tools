@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2023, Oracle and/or its affiliates.
+# Copyright (c) 2023-2024, Oracle and/or its affiliates.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -105,6 +105,12 @@ class CpuStat(Enum):
     gnice = 9
 
 
+stat_fire_high = [CpuStat.usr, CpuStat.nice, CpuStat.sys,
+                  CpuStat.iowait, CpuStat.irq, CpuStat.soft,
+                  CpuStat.steal, CpuStat.guest, CpuStat.gnice]
+stat_fire_low = [CpuStat.idle]
+
+
 def cpu_thresholds_reached(
         cpu_utils: Sequence[Sequence[float]],
         stat_thresholds: Mapping[CpuStat, int],
@@ -112,8 +118,23 @@ def cpu_thresholds_reached(
     """Compute CPU stats that reached the specified thresholds"""
     for stats in cpu_utils:
         for stat, threshold in stat_thresholds.items():
-            if stats[stat.value] < threshold:
-                break  # current CPU didn't reach all stat thresholds
+            if stat.value in [v.value for v in stat_fire_low]:
+                if stats[stat.value] > threshold:
+                    # Don't fire if the value of the stat is greather than
+                    # the threshold value.
+                    break
+            elif stat.value in [v.value for v in stat_fire_high]:
+                if stats[stat.value] < threshold:
+                    # Don't fire if the value of the stat is less than
+                    # the threshold value.
+                    break
+            else:
+                logging.error("CPU Stat %d is not in either list." %
+                              stat.value)
+                # Stat is not in either list, default to fire when the stat
+                # is greather than or equal to the threshold value.
+                if stats[stat.value] < threshold:
+                    break
         else:
             nr_cpus = nr_cpus - 1  # current CPU reached all thresholds
 
@@ -408,6 +429,7 @@ def main() -> None:
     thresholds = "\n".join(
         f"\t\t{k.name}: {v}%" for k, v in args.stat_thresholds.items())
     config_str = (
+        f"\tHost Name: {os.uname()[1]}\n"
         f"\tRun continuously: {args.run_continuously}\n"
         f"\t# CPUs: {'ALL' if args.nr_cpus <= 0 else args.nr_cpus}\n"
         f"\tThresholds:\n{thresholds}\n"

@@ -85,8 +85,6 @@ NUMASTAT_DIFF_PERCENT = 200 * PERCENT
 # Percent of free memory that's available in low (0-3) orders
 FRAG_LEVEL_LOW_ORDERS = 95
 
-ORDER_KB = [4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096]  # Order-x in KB
-
 # Output log file, lock file and default execution frequency
 LOGROTATEFILE = "/etc/logrotate.d/memstate"
 LOGFILE = "/var/oled/memstate/memstate.log"

@@ -68,7 +68,7 @@ class Rss(Base):
         end_time = time.time()
         self.log_debug(
             f"Time taken to extract memory stats from {num_files_scanned}"
-            f" /proc/<pid>/status files is {round(end_time - start_time)} "
+            f" /proc/<pid>/status files is {(end_time - start_time):.2f} "
             "second(s).")
         rss_sorted = OrderedDict(
             sorted(rss.items(), key=lambda x: x[1], reverse=True))
@@ -85,6 +85,6 @@ class Rss(Base):
         else:
             hdr = f"TOP {num} MEMORY CONSUMERS (in KB):"
         print(hdr)
-        print(f"{'PROCESS(PID)': <30}{'RSS': >12}")
+        print(f"{'PROCESS(PID)': <30}{'RSS': >16}")
         self.__display_top_vmrss(num)
         print("")

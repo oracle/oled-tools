@@ -91,6 +91,9 @@ class Pss(Base):
                                     int(line.split(":")[1].strip().split()[0])
                 except OSError:
                     pass
+                if ((num_files_scanned % 100) == 0):
+                    # Sleep for 1 ms every 100 files, to avoid hogging the CPU
+                    time.sleep(0.001)
         except OSError:
             pass
 
@@ -105,7 +108,7 @@ class Pss(Base):
 
         self.log_debug(
             f"Time taken to extract Pss values from {num_files_scanned} "
-            f"/proc/<pid>/smaps_rollup files is {round(end_time - start_time)}"
+            f"/proc/<pid>/smaps_rollup files is {(end_time - start_time):.2f}"
             " second(s).")
         pss_sorted = OrderedDict(
             sorted(pss.items(), key=lambda x: x[1], reverse=True))
@@ -122,7 +125,7 @@ class Pss(Base):
             num_printed += 1
         print("")
         print(
-            "Total memory used by all processes: "
+            ">> Total memory used by all processes: "
             f"{self.__get_total_pss_gb(pss_sorted)} GB")
 
     def __display_single_process_mem(self, pid):

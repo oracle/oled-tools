@@ -31,12 +31,9 @@
  * Sample output: Refer to the file arp_origin_example.txt
  */
 
-#define DT_VERSION_NUMBER_(M, m, u) \
-        ((((M) & 0xFF) << 24) | (((m) & 0xFFF) << 12) | ((u) & 0xFFF))
-
-#if __SUNW_D_VERSION >= DT_VERSION_NUMBER_(2,0,0)
-#pragma D option lockmem=unlimited
-#endif
+/*
+ * min_kernel 4.14.35-2042,5.4.17,5.15.0-200.103.1
+ */
 
 #define arp_protocol 0x0806
 #define arp_request_opcode 1
@@ -51,11 +48,11 @@ ntohs(this->arphdr->ar_op) == arp_request_opcode
 {
         this->dev = ((struct net_device *) ((struct sk_buff *)arg0)->dev);
 	this->ip_var = (u64)this->arphdr + sizeof(struct arphr) + this->arphdr->ar_hln + sizeof(this->arphdr->ar_op);
-        this->sip = (ipaddr_t *)this->ip_var;
-        this->tip = (ipaddr_t *)(this->ip_var + this->arphdr->ar_pln + this->arphdr->ar_hln);
+        this->sip = (__be32 *)this->ip_var;
+        this->tip = (__be32 *)(this->ip_var + this->arphdr->ar_pln + this->arphdr->ar_hln);
 
-        printf("%Y %s Send arp request: sip: %s, tip: %s\n",
-		walltimestamp, this->dev->name, inet_ntoa(this->sip),
+        printf("%Y Send arp request: sip: %s, tip: %s\n",
+		walltimestamp, inet_ntoa(this->sip),
 		inet_ntoa(this->tip));
 }
 
@@ -67,11 +64,11 @@ ntohs(this->arphdr->ar_op) == arp_reply_opcode
 {
         this->dev = ((struct net_device *) ((struct sk_buff *)arg0)->dev);
         this->ip_var = (u64)this->arphdr + sizeof(struct arphr) + this->arphdr->ar_hln + sizeof(this->arphdr->ar_op);
-        this->sip = (ipaddr_t *)this->ip_var;
-        this->tip = (ipaddr_t *)(this->ip_var + this->arphdr->ar_pln + this->arphdr->ar_hln);
+        this->sip = (__be32 *)this->ip_var;
+        this->tip = (__be32 *)(this->ip_var + this->arphdr->ar_pln + this->arphdr->ar_hln);
 
-        printf("%Y %s Recv arp reply sip: %s tip: %s\n",
-		walltimestamp, this->dev->name, inet_ntoa(this->sip),
+        printf("%Y Recv arp reply sip: %s tip: %s\n",
+		walltimestamp, inet_ntoa(this->sip),
 		inet_ntoa(this->tip));
 }
 
@@ -79,16 +76,16 @@ fbt:vmlinux:arp_send:entry,
 fbt:vmlinux:arp_create:entry
 / arg0 == arp_request_opcode || arg0 == arp_reply_opcode /
 {
-	this->tip = (__be32 *)alloca(4);
- 	*(this->tip) = arg2;
- 	this->sip = (__be32 *)alloca(4);
-        *(this->sip) = arg4;
+	this->tipa = (__be32 *)alloca(4);
+	*(this->tipa) = arg2;
+	this->sipa = (__be32 *)alloca(4);
+        *(this->sipa) = arg4;
 
         printf("%Y %s Send arp %s sip: %s, tip: %s\n", 
 		walltimestamp, ((struct net_device *)arg3)->name,
 		arg0 == 1 ? "request":arg0 == 2 ? "reply":"unknown", 
-		inet_ntoa((ipaddr_t *)this->sip),
-		inet_ntoa((ipaddr_t *)this->tip));
+		inet_ntoa((__be32 *)this->sipa),
+		inet_ntoa((__be32 *)this->tipa));
 
 }
 
@@ -102,16 +99,16 @@ fbt:vmlinux:arp_ignore:entry
 fbt:vmlinux:arp_ignore:return
 / self->dev != NULL /
 {
-        this->tip = (__be32 *)alloca(4);
-        *(this->tip) = self->tip;
-        this->sip = (__be32 *)alloca(4);
-        *(this->sip) = self->sip;
+        this->tipa = (__be32 *)alloca(4);
+        *(this->tipa) = self->tip;
+        this->sipa = (__be32 *)alloca(4);
+        *(this->sipa) = self->sip;
 
 	printf("%Y %s Recv arp request %s sip: %s, tip: %s\n",
 		walltimestamp, self->dev->name,
 		arg1 == 1 ? "(Ignoring) " : "",
-		inet_ntoa((ipaddr_t *)this->sip),
-		inet_ntoa((ipaddr_t *)this->tip));
+		inet_ntoa((__be32 *)this->sipa),
+		inet_ntoa((__be32 *)this->tipa));
 
 	self->sip = 0;
 	self->tip = 0;

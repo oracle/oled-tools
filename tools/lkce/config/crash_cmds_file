@@ -1,0 +1,18 @@
+#
+# This is the input file for crash utility. You can edit this manually
+# to add your own list of crash commands one per line.
+#
+bt
+bt -a
+bt -FF
+dev
+kmem -s
+foreach bt
+log
+mod
+mount
+net
+ps -m
+ps -S
+runq
+quit

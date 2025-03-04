@@ -34,12 +34,9 @@
  * Sample output: Refer to the file spinlock_time_example.txt
  */
 
-#define DT_VERSION_NUMBER_(M, m, u) \
-        ((((M) & 0xFF) << 24) | (((m) & 0xFFF) << 12) | ((u) & 0xFFF))
-
-#if __SUNW_D_VERSION >= DT_VERSION_NUMBER_(2,0,0)
-#pragma D option lockmem=unlimited
-#endif
+/*
+ * min_kernel 4.14.35-2047.511.5.5.3,5.4.17-2136.315.5.8,5.15.0-200.103.1
+ */
 
 #pragma D option cleanrate=50hz
 #pragma D option dynvarsize=16000000
@@ -64,7 +61,7 @@ dtrace:::BEGIN
  * handle the scenario: Second cpu acquires a lock before release_probe is fired
  * after first cpu unlocked it.
  */
-lockstat:vmlinux:*spin_lock_irq*:spin-acquire
+lockstat:vmlinux:*:spin-acquire
 {
 	time[arg0, cpu] = timestamp;
 }

@@ -32,7 +32,7 @@ install:
 	@echo "install:$(CURDIR)"
 	@echo "$(MEMSTATE_LIB)"
 	mkdir -p $(MEMSTATE_LIB)
-	install -m 755 $(CURDIR)/memstate.py $(BINDIR)/memstate
+	install -m 755 $(CURDIR)/memstate.py $(OLEDBINDIR)/memstate
 	install -m 755 $(CURLIB)/__init__.py $(MEMSTATE_LIB)/__init__.py
 	install -m 755 $(CURLIB)/base.py $(MEMSTATE_LIB)/base.py
 	install -m 755 $(CURLIB)/buddyinfo.py $(MEMSTATE_LIB)/buddyinfo.py
@@ -51,7 +51,7 @@ install:
 
 uninstall:
 	@echo "uninstall:$(CURDIR)"
-	rm -f $(BINDIR)/memstate
+	rm -f $(OLEDBINDIR)/memstate
 	rm -f $(MEMSTATE_LIB)/base.py
 	rm -f $(MEMSTATE_LIB)/buddyinfo.py
 	rm -f $(MEMSTATE_LIB)/constants.py

@@ -18,8 +18,8 @@
 # or visit www.oracle.com if you need additional information or have any
 # questions.
 
-SCRIPTSDIR := $(BINDIR)/scripts
-DOCSDIR := $(BINDIR)/scripts/docs
+SCRIPTSDIR := $(OLEDBINDIR)/scripts.d
+DOCSDIR := $(OLEDBINDIR)/scripts.d/docs
 
 all:
 	@echo "all:$(CURDIR)"
@@ -27,10 +27,20 @@ all:
 clean:
 	@echo "clean:$(CURDIR)"
 
+additional-scripts.8: additional-scripts.8.scd
+	scdoc < $< > $@
+
+# Whenever additional-scripts.8.scd is modified, `make man` must be run and 
+# the resulting changes to additional-scripts.8 must be committed together 
+# with additional-scripts.8.scd
+man: additional-scripts.8
+
+
 install:
 	@echo "install:$(CURDIR)"
 	mkdir -p $(SCRIPTSDIR)
 	mkdir -p $(DOCSDIR)
+	gzip -c additional-scripts.8 > $(MANDIR)/additional-scripts.8.gz;chmod 644 $(MANDIR)/additional-scripts.8.gz
 #net
 	install -m 755 $(CURDIR)/net/arp_origin.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/net/arp_origin_example.txt $(DOCSDIR)
@@ -40,6 +50,10 @@ install:
 	install -m 755 $(CURDIR)/net/rds_check_tx_stall_example.txt $(DOCSDIR)
 	install -m 755 $(CURDIR)/net/rds_conn2irq.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/net/rds_conn2irq_example.txt $(DOCSDIR)
+	install -m 755 $(CURDIR)/net/cq.d $(SCRIPTSDIR)
+	install -m 755 $(CURDIR)/net/cq_example.txt $(DOCSDIR)
+	install -m 755 $(CURDIR)/net/cqn_track.d $(SCRIPTSDIR)
+	install -m 755 $(CURDIR)/net/cqn_track_example.txt $(DOCSDIR)
 	install -m 755 $(CURDIR)/net/rds_egress_TP.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/net/rds_egress_TP_example.txt $(DOCSDIR)
 	install -m 755 $(CURDIR)/net/rds_rdma_lat.d $(SCRIPTSDIR)
@@ -50,6 +64,12 @@ install:
 	install -m 755 $(CURDIR)/net/rds_tx_funccount_example.txt $(DOCSDIR)
 	install -m 755 $(CURDIR)/net/ping_lat.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/net/ping_lat_example.txt $(DOCSDIR)
+	install -m 755 $(CURDIR)/net/cm_destroy_id.d $(SCRIPTSDIR)
+	install -m 755 $(CURDIR)/net/cm_destroy_id_example.txt $(DOCSDIR)
+	install -m 755 $(CURDIR)/net/mlx_vhcaid.d $(SCRIPTSDIR)
+	install -m 755 $(CURDIR)/net/mlx_vhcaid_example.txt $(DOCSDIR)
+	install -m 755 $(CURDIR)/net/mlxqpdump.sh $(SCRIPTSDIR)
+	install -m 755 $(CURDIR)/net/mlxqpdump_example.txt $(DOCSDIR)
 #io
 	install -m 755 $(CURDIR)/io/nvme_io_comp.d $(SCRIPTSDIR)
 	install -m 755 $(CURDIR)/io/nvme_io_comp_example.txt $(DOCSDIR)
@@ -66,4 +86,5 @@ uninstall:
 	@echo "uninstall:$(CURDIR)"
 	rm -rf $(SCRIPTSDIR)
 	rm -rf $(DOCSDIR)
+	rm -f $(MANDIR)/additional-scripts.8.gz
 	@echo "scripts successfully uninstalled"

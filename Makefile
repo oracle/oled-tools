@@ -21,9 +21,16 @@
 VERSION="0.7"
 ARCH := $(shell uname -m)
 
-subdirs := tools/lkce tools/memstate tools/kstack tools/syswatch tools/scanfs tools/vmcore-utils
+subdirs := scripts \
+	tools/kstack \
+	tools/lkce \
+	tools/oomwatch \
+	tools/memstate \
+	tools/scanfs \
+	tools/scripts \
+	tools/syswatch \
+	tools/vmcore-utils
 
-subdirs := $(subdirs) scripts
 rev_subdirs := $(shell echo -n "$(subdirs) " | tac -s ' ')
 OLEDDIR := $(DESTDIR)/etc/oled
 SBINDIR := $(DESTDIR)/usr/sbin
@@ -35,11 +42,11 @@ export MANDIR
 
 all:
 	echo $(subdirs)
-	$(foreach dir,$(subdirs), $(MAKE) BINDIR=$(OLEDBIN) -C $(dir) all || exit 1;)
+	$(foreach dir,$(subdirs), $(MAKE) OLEDBINDIR=$(OLEDBIN) -C $(dir) all || exit 1;)
 
 clean:
 
-	$(foreach dir,$(subdirs), $(MAKE) BINDIR=$(OLEDBIN) -C $(dir) clean;)
+	$(foreach dir,$(subdirs), $(MAKE) OLEDBINDIR=$(OLEDBIN) -C $(dir) clean;)
 
 install:
 	@echo "install:$(CURDIR)"
@@ -50,12 +57,12 @@ install:
 	mkdir -p $(OLEDBIN)
 	install -m 755 oled.py $(SBINDIR)/oled
 	gzip -c oled.man > $(MANDIR)/oled.8.gz; chmod 644 $(MANDIR)/oled.8.gz
-	$(foreach dir,$(subdirs), $(MAKE) BINDIR=$(OLEDBIN) -C $(dir) install || exit 1;)
+	$(foreach dir,$(subdirs), $(MAKE) OLEDBINDIR=$(OLEDBIN) -C $(dir) install || exit 1;)
 	@echo "oled-tools installed"
 
 uninstall:
 	@echo "uninstall:$(CURDIR)"
-	$(foreach dir, $(rev_subdirs), $(MAKE) BINDIR=$(OLEDBIN) -C $(dir) uninstall || exit 1;)
+	$(foreach dir, $(rev_subdirs), $(MAKE) OLEDBINDIR=$(OLEDBIN) -C $(dir) uninstall || exit 1;)
 	rm -f $(MANDIR)/oled.8.gz
 	rm -f $(SBINDIR)/oled
 	rmdir $(OLEDBIN) || :

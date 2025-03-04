@@ -26,13 +26,13 @@ clean:
 
 install:
 	@echo "install:$(CURDIR)"
-	install -m 755 $(CURDIR)/scanfs.py $(BINDIR)/scanfs
+	install -m 755 $(CURDIR)/scanfs.py $(OLEDBINDIR)/scanfs
 	gzip -c $(CURDIR)/scanfs.man > $(MANDIR)/oled-scanfs.8.gz
 	chmod 644 $(MANDIR)/oled-scanfs.8.gz
 	@echo "scanfs successfully installed!"
 
 uninstall:
 	@echo "uninstall:$(CURDIR)"
-	rm -f $(BINDIR)/scanfs
+	rm -f $(OLEDBINDIR)/scanfs
 	rm -f $(MANDIR)/oled-scanfs.8.gz
 	@echo "scanfs successfully uninstalled!"

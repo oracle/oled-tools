@@ -1,0 +1,2 @@
+Purpose: This script NOT meant to be run on its own.  This is included as a 
+         helper script to cm_destroy_id.d.

@@ -1,0 +1,22 @@
+Purpose: When the cm_destroy_id() function times out, the kernel will call
+         cm_destroy_id_wait_timeout(). This dtrace script will probe for 
+	 cm_destroy_id_wait_timeout() and prints the cm_id, qp_num and pci_id of
+	 the associated QP. Script will exit after 5 probes.
+
+Argument: None
+
+Output format:
+	Trigger Resourcedump: iter=<val> qp_num=<val> cm_id=<val> bdf=<val>
+
+Sample output:
+
+
+#./cm_destroy_id.d
+Trigger Resourcedump: iter=1 qp_num=1 cm_id=ffff97423c4c5800 bdf=0000:17:00.0
+Trigger Resourcedump: iter=2 qp_num=1 cm_id=ffff97447cd46200 bdf=0000:17:00.0
+Trigger Resourcedump: iter=3 qp_num=1 cm_id=ffff9742506d7e00 bdf=0000:17:00.0
+Trigger Resourcedump: iter=4 qp_num=1 cm_id=ffff974075881600 bdf=0000:17:00.0
+Trigger Resourcedump: iter=5 qp_num=1 cm_id=ffff973ba187b000 bdf=0000:17:00.0
+Exiting the script after 5 iterations
+
+

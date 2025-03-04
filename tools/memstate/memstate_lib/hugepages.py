@@ -71,22 +71,14 @@ class Hugepages(Base):
 
     @staticmethod
     def __create_matrix(hp_dict):
-        hp_size_arr = []
+        """Create a dictionary of lists, where each list in the
+        dictionary is accessed using the hugepage_size as key, and the
+        list has KBs of hugepages (of that size) for each NUMA node.
 
-        # Determine number of hugepage sizes
-        for key in hp_dict:
-            (size, _) = key.split("_")
-            hp_size_kb = int(size)
-            if hp_size_kb not in hp_size_arr:
-                hp_size_arr.append(hp_size_kb)
-
-        # Create a dictionary of lists, where each list in the dictionary is
-        # accessed using the hugepage_size as key, and the list has
-        # nr_hugepages (of that size) for each NUMA node.
-        # For instance, on a 2-node system with both 2 MB and 1 GB hugepages,
-        # hp_matrix will be something similar to:
-        #   {'2048': [22212, 22272], '1048576': [99, 100]}
-
+        For instance, on a 2-node system with both 2 MB and 1 GB hugepages,
+        hp_matrix will be something similar to:
+          {'2048': [262144, 262144], '1048576': [1048576, 1048576]}
+        """
         hp_matrix = {}
         for key in hp_dict:
             (size, _) = key.split("_")

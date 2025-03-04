@@ -16,11 +16,12 @@ See usage below, for available options.
 usage: oled {-h | -v | COMMAND [ARGS]}
 
 Valid commands:
+     kstack      -- Gather kernel stack based on the process status or PID
      lkce        -- Linux Kernel Core Extractor
      memstate    -- Capture and analyze memory usage statistics
-     kstack      -- Gather kernel stack based on the process status or PID
-     syswatch    -- Execute user-provided commands based on the CPU utilization
      scanfs      -- Scan KVM images for corruption, supports XFS and EXT4
+     scripts     -- Run additional oled-tools scripts
+     syswatch    -- Execute user-provided commands based on the CPU utilization
      vmcore_sz   -- Estimating vmcore size before kernel dump
 
 optional arguments:
@@ -36,8 +37,7 @@ its usage.
 .TP
 
 # oled memstate -h
-usage: oled memstate [-h] [-p [PID]] [-s [FILE]] [-n [FILE]] [-a] [-v]
-                     [-f [INTERVAL]]
+usage: oled memstate [-h] [-p [PID]] [-s] [-n [FILE]] [-v] [-f [INTERVAL]]
 
 memstate: Capture and analyze memory usage data on this system.
 
@@ -45,11 +45,9 @@ optional arguments:
   -h, --help            show this help message and exit
   -p [PID], --pss [PID]
                         display per-process memory usage
-  -s [FILE], --slab [FILE]
-                        analyze/display slab usage
+  -s, --slab            analyze/display slab usage
   -n [FILE], --numa [FILE]
                         analyze/display NUMA stats
-  -a, --all             display all data
   -v, --verbose         verbose data capture; combine with other options
   -f [INTERVAL], --frequency [INTERVAL]
                         interval at which data should be collected (default:

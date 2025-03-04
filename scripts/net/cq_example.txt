@@ -1,0 +1,12 @@
+Purpose: This script tracks new connections and prints the Completion Queue
+objects and the associated completion queue numbers.
+
+Arguments: None.
+
+Output format: each line lists
+<probe> <pid> <execname> <IB device> <CQ object> <Mellanox Core CQ Object> <CQ
+number> <IRQ number>
+Sample output: Shown below.
+# dtrace -Cs cq.d
+mlx5_ib_create_cq:972:kworker/118:1 ib_dev=ff3b0695efc90000 ib_cq=ff3b069868d7c000 m_core_cq=ff3b069868d7c0d8 cqn=1038 irqn=461
+mlx5_ib_create_cq:972:kworker/118:1 ib_dev=ff3b0695efc90000 ib_cq=ff3b069868d7e000 m_core_cq=ff3b069868d7e0d8 cqn=1039 irqn=460

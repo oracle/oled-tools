@@ -164,12 +164,12 @@ class Base:
     @staticmethod
     def print_pretty_gb(str_msg, int_arg):
         """Print GB value in a pretty format."""
-        print(f"{str_msg: <30}{int_arg: >12}")
+        print(f"{str_msg: <30}{int_arg: >16}")
 
     @staticmethod
     def print_pretty_kb(str_msg, int_arg):
         """Print KB value in a pretty format."""
-        print(f"{str_msg: <30}{int_arg: >12}")
+        print(f"{str_msg: <30}{int_arg: >16}")
 
     @staticmethod
     def get_kernel_ver():

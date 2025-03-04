@@ -1,0 +1,37 @@
+policy_module(pcp-oomwatch, 1.0.0)
+
+require{
+    type pcp_pmie_t;
+    type pcp_pmie_exec_t;
+    type chkpwd_t;
+    type sshd_t;
+    type user_devpts_t;
+    type pcp_pmcd_t;
+    type system_dbusd_t;
+    type init_t;
+    type unconfined_t;
+    type pcp_pmie_t;
+    type unconfined_service_t;
+}
+
+sudo_exec(pcp_pmie_t);
+logging_send_audit_msgs(pcp_pmie_t);
+auth_rw_faillog(pcp_pmie_t);
+auth_exec_chkpwd(pcp_pmie_t);
+auth_domtrans_chkpwd(pcp_pmie_t);
+
+#============= pcp_pmie_t ==============
+allow pcp_pmie_t self:capability sys_resource;
+allow pcp_pmie_t self:process setsched;
+# domain_signal_all_domains(pcp_pmie_t);
+domain_kill_all_domains(pcp_pmie_t);
+# allow pcp_pmie_t pcp_pmcd_t:process sigkill;
+# allow pcp_pmie_t unconfined_t:process sigkill;
+
+
+#============= sshd_t ==============
+allow pcp_pmie_t chkpwd_t:process { noatsecure rlimitinh siginh };
+userdom_use_inherited_user_ptys(chkpwd_t);
+allow system_dbusd_t unconfined_service_t:process { noatsecure rlimitinh siginh };
+allow system_dbusd_t self:capability net_admin;
+

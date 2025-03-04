@@ -1,0 +1,11 @@
+[Unit]
+Description=oled-tools startup scripts
+Documentation=man:oled-scripts(8)
+After=network.target
+
+[Service]
+Type=exec
+ExecStart=/usr/libexec/oled-tools/scripts run-startup-enabled
+
+[Install]
+WantedBy=multi-user.target

@@ -26,13 +26,13 @@ clean:
 
 install:
 	@echo "install:$(CURDIR)"
-	install -m 755 $(CURDIR)/vmcore_sz.py $(BINDIR)/vmcore_sz
+	install -m 755 $(CURDIR)/vmcore_sz.py $(OLEDBINDIR)/vmcore_sz
 	gzip -c $(CURDIR)/vmcore_sz.man > $(MANDIR)/oled-vmcore_sz.8.gz
 	chmod 644 $(MANDIR)/oled-vmcore_sz.8.gz
 	@echo "vmcore-utils successfully installed!"
 
 uninstall:
 	@echo "uninstall:$(CURDIR)"
-	rm -f $(BINDIR)/vmcore_sz
+	rm -f $(OLEDBINDIR)/vmcore_sz
 	rm -f $(MANDIR)/oled-vmcore_sz.8.gz
 	@echo "vmcore-utils successfully uninstalled!"

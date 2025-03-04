@@ -1,0 +1,49 @@
+Purpose: Print 'vhca id' of the mellanox devices (CX5) from a VM
+
+Note: The Mellanox macro/data structure is modified starting from UEK7.
+Hence in UEK7, you need to pass the argument '-D uek7'.
+For UEK5 and UEK6, no argument is required
+
+command, arguments:
+1) ./mlx_vhcaid.d -D uek7  (for UEK7)
+2) ./mlx_vhcaid.d (for UEK5,UEK6)
+
+
+Output format: s.no) ip_addr=<ip> vhca_id=<id> rds_dev=<rds_ib_device> ib_dev=<ib_device> name=<dev_name> mdev=<mlx5_core_dev> bdf=<pci_id>
+
+Sample output:
+
+1) uek7:
+
+[root@ol815 ~]# uname -r
+5.15.0-200.119.13.el8uek.x86_64
+
+[root@ol815 ~]# ./mlx_vhcaid.d -D uek7
+DTrace 2.0.0 [Pre-Release with limited functionality]
+1) ip_addr=192.168.100.58 vhca_id=65535 rds_dev=ffff991585e62000 ib_dev=ffff991598c68000 name=mlx5_0 mdev=ffff9915998801e0 bdf=0000:00:0a.0
+2) ip_addr=192.168.100.60 vhca_id=65535 rds_dev=ffff9915835f0000 ib_dev=ffff991598c74000 name=mlx5_1 mdev=ffff991599fc01e0 bdf=0000:00:0b.0
+
+===============================
+Number of devices: 2
+===============================
+
+
+2) uek5:
+
+[root@ol78 ~]# uname -r
+4.14.35-2047.518.4.2.el7uek.x86_64
+[root@ol78 ~]#
+[root@ol78 ~]# ./mlx_vhcaid.d
+1) ip_addr=192.168.100.112 vhca_id=13 rds_dev=ffff8d9e521c5000 ib_dev=ffff8d9e61af0000 name=mlx5_0 mdev=ffff8d9e55600060 bdf=0000:04:01.0
+2) ip_addr=192.168.100.117 vhca_id=14 rds_dev=ffff8d9e4fc81000 ib_dev=ffff8d9e52170000 name=mlx5_1 mdev=ffff8d9e54600060 bdf=0000:04:01.1
+
+===============================
+Number of devices: 2
+===============================
+
+
+3) If a wrong argument is passed, the script would fail with an error:
+
+[root@ol78 ~]# ./mlx_vhcaid.d -D uek7
+dtrace: failed to compile script ./mlx_vhcaid.d: line 81: hca is not a member of struct
+

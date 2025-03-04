@@ -1,12 +1,12 @@
-.TH OLED MEMSTATE 8 "Jul 2021" "Oracle Linux Enhanced Diagnostics"
+.TH OLED MEMSTATE 8 "May 2024" "Oracle Linux Enhanced Diagnostics"
 
 .SH NAME
 oled memstate - Captures and analyzes various memory usage statistics on the
 running system.
 
 .SH SYNOPSIS
-oled memstate [-h] [-p [PID]] [-s [FILE]] [-n [FILE]] [-a] [-v] \
-[-f [INTERVAL]]
+
+oled memstate [-h] [-p [PID]] [-s] [-n [FILE]] [-v] [-f [INTERVAL]]
 
 .SH DESCRIPTION
 The memstate tool gathers data about memory usage on the system where it's run,
@@ -44,14 +44,16 @@ memory mappings and usage summary for that process only, extracted from
 /proc/<pid>/smaps file.
 
 .TP
--s [FILE], --slab [FILE]
-    Analyzes/displays slab usage. It takes an optional file
-input, which should contain the output of 'cat /proc/slabinfo'. This can be
-used to analyze the slab usage on another system offline. To display the
-slab usage on the current/running system, simply omit the file input. This
-option can also be combined with -v/--verbose, which will display all slab
-caches, without which it will display 10 biggest slab caches. This data is
-gathered from /proc/slabinfo.
+-s, --slab
+    Analyzes/displays slab usage. The data is gathered from files in
+/sys/kernel/slab/<cache>/. It prints the name of the slab cache, memory
+consumed (in KB) and a list of all aliases for that cache. The kernel typically
+merges slab caches with similar attributes (object size, alignement, etc.).
+For a set of merged slabs, the file /proc/slabinfo displays only one slab cache
+name, ignoring the rest. These merged caches or aliases are present in
+/sys/kernel/slab/ files, which memstate parses and displays in its output.
+This option can also be combined with -v/--verbose, which will display all slab
+caches, without which it will display 10 biggest slab caches.
 
 .TP
 -n [FILE], --numa [FILE]
@@ -77,16 +79,8 @@ and redirecting it to a file. This file can be passed as input, with
 process.
 
 .TP
--a, --all
-    Displays all data. This option displays a basic memory usage summary,
-plus the biggest slab caches, the top swap space consumers along with the NUMA
-stats summary. If combined with -v/--verbose, it also checks/displays per-process
-memory use, but this can be an expensive operation. See -p/--pss for more
-details.
-
-.TP
 -v, --verbose
-    Verbose data capture; this should be combined with other options.
+    Verbose data capture. This can be combined with other options.
 
 .TP
 -f [INTERVAL], --frequency [INTERVAL]

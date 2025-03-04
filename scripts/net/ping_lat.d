@@ -31,12 +31,9 @@
  * Sample output: Refer to the file ping_lat_example.txt
 */
 
-#define DT_VERSION_NUMBER_(M, m, u) \
-        ((((M) & 0xFF) << 24) | (((m) & 0xFFF) << 12) | ((u) & 0xFFF))
-
-#if __SUNW_D_VERSION >= DT_VERSION_NUMBER_(2,0,0)
-#pragma D option lockmem=unlimited
-#endif
+/*
+ * min_kernel 4.14.35-2042,5.4.17,5.15.0-200.103.1
+ */
 
 #define ICMP_PROTOCOL   1
 #define ICMP_ECHO       8
@@ -53,9 +50,9 @@ fbt:ib_ipoib:ipoib_cm_send:entry
 (this->icmphdr->type == ICMP_ECHO)
 /
 {
-	this->sip = inet_ntoa((ipaddr_t *)(&this->iphdr->saddr));
-	this->dip = inet_ntoa((ipaddr_t *)(&this->iphdr->daddr));
-	this->icmp_seq = this->icmphdr->un.echo.sequence;
+	this->sip = inet_ntoa((__be32 *)(&this->iphdr->saddr));
+	this->dip = inet_ntoa((__be32 *)(&this->iphdr->daddr));
+	this->icmp_seq = ntohs(this->icmphdr->un.echo.sequence);
 	this->icmp_id = ntohs(this->icmphdr->un.echo.id);
 
 	timestamp_info[this->sip, this->dip, this->icmp_seq, this->icmp_id, probefunc] = timestamp;
@@ -75,9 +72,9 @@ fbt:ib_ipoib:ipoib_start_xmit:entry
 (this->icmphdr->type == ICMP_ECHO)
 /
 {
-	this->sip = inet_ntoa((ipaddr_t *)(&this->iphdr->saddr));
-	this->dip = inet_ntoa((ipaddr_t *)(&this->iphdr->daddr));
-	this->icmp_seq = this->icmphdr->un.echo.sequence;
+	this->sip = inet_ntoa((__be32 *)(&this->iphdr->saddr));
+	this->dip = inet_ntoa((__be32 *)(&this->iphdr->daddr));
+	this->icmp_seq = ntohs(this->icmphdr->un.echo.sequence);
 	this->icmp_id = ntohs(this->icmphdr->un.echo.id);
 
 	timestamp_info[this->sip, this->dip, this->icmp_seq, this->icmp_id, probefunc] = timestamp;
@@ -93,9 +90,9 @@ fbt:vmlinux:icmp_rcv:entry
 (this->icmphdr->type == ICMP_ECHO_REPLY)
 /
 {
-	this->sip = inet_ntoa((ipaddr_t *)(&this->iphdr->daddr));
-	this->dip = inet_ntoa((ipaddr_t *)(&this->iphdr->saddr));
-	this->icmp_seq = this->icmphdr->un.echo.sequence;
+	this->sip = inet_ntoa((__be32 *)(&this->iphdr->daddr));
+	this->dip = inet_ntoa((__be32 *)(&this->iphdr->saddr));
+	this->icmp_seq = ntohs(this->icmphdr->un.echo.sequence);
 	this->icmp_id = ntohs(this->icmphdr->un.echo.id);
 
 	this->ip_send_skb_time = timestamp_info[this->sip, this->dip, this->icmp_seq, this->icmp_id, "ip_send_skb"];

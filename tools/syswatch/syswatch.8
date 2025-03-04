@@ -4,7 +4,7 @@
 .nh
 .ad l
 .\" Begin generated content:
-.TH "syswatch" "8" "2023-07-20"
+.TH "syswatch" "8" "2024-05-24"
 .P
 .SH NAME
 .P
@@ -23,6 +23,10 @@ when the configured thresholds are reached.
 The tool samples CPU utilization for intervals of \fISECONDS\fR (5 seconds by
 default), and if the configured thresholds are reached in that interval, the
 commands specified with \fB-c\fR are executed.
+.P
+The exception to this is the \fIidle\fR threshold.  The test for \fIidle\fR is inverted.
+If you specify \fB-s idle:50\fR the commands specified with \fB-c\fR will be executed
+when the %idle reaches 50 or LOWER.
 .P
 At least one threshold to watch must be specified with \fB-s\fR.  If more than one
 threshold is specified, i.e. \fB-s\fR is specified more than once, the commands

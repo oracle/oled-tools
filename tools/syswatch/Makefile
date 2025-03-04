@@ -33,7 +33,7 @@ man: syswatch.8
 
 install:
 	@echo "install:$(CURDIR)"
-	install --mode=755 $(CURDIR)/syswatch $(BINDIR)/syswatch
+	install --mode=755 $(CURDIR)/syswatch $(OLEDBINDIR)/syswatch
 	gzip -c $(CURDIR)/syswatch.8 > $(MANDIR)/oled-syswatch.8.gz
 	chmod 644 $(MANDIR)/oled-syswatch.8.gz
 	@echo "SYSWATCH successfully installed!"
@@ -41,5 +41,5 @@ install:
 uninstall:
 	@echo "uninstall:$(CURDIR)"
 	rm -f $(MANDIR)/oled-syswatch.8.gz
-	rm -f $(BINDIR)/syswatch
+	rm -f $(OLEDBINDIR)/syswatch
 	@echo "SYSWATCH successfully uninstalled!"

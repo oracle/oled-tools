@@ -1,4 +1,4 @@
-#!/usr/sbin/dtrace -qs
+#!/usr/sbin/dtrace -Cqs
 
 /*
  * Copyright (c) 2024, Oracle and/or its affiliates.
@@ -22,14 +22,17 @@
  * questions.
  *
  *
- * Author(s): Rajan Shanmugavelu
- * Purpose: to measure SCSI Mid Layer IO latency in milliseconds (ms) and
- *          to measure QLogic adapter layer IO latency in milliseconds(ms).
+ * Author(s): Rajan Shanmugavelu, Shminderjit Singh
+ * Purpose: to measure SCSI Mid Layer IO latency in milliseconds (ms).
  * The script requires 1 arguments:
  *    - the reporting period (in secs) for latency
  * The DTrace 'fbt' and 'profile' modules need to be loaded
  * ('modprobe -a fbt profile') for UEK5.
  * Sample output: Refer to the file scsi_latency_example.txt
+ */
+
+/*
+ * min_kernel 4.14.35-2047.539.2,5.4.17-2136.315.5.8,5.15.0-100.52.2
  */
 
 #pragma D option dynvarsize=100m
@@ -60,7 +63,9 @@ BEGIN
 	scsistarttime[this->cmnd] = timestamp;
 }
 
+#ifdef uek5
 fbt::scsi_done:entry,
+#endif
 fbt::scsi_mq_done:entry
 / scsistarttime[(this->scsi_cmnd = (struct scsi_cmnd *) arg0)] /
 {
@@ -72,24 +77,6 @@ fbt::scsi_mq_done:entry
 	@lat[opcode[this->opcode], this->status] = quantize(this->elasped);
 	scsistarttime[this->scsi_cmnd] = 0;
 }
-
-fbt::qla2xxx_queuecommand:entry
-{
-	this->qla_cmd = (struct scsi_cmnd *)arg1;
-	qla_starttime[this->qla_cmd] = timestamp;
-}
-
-fbt::qla2x00_sp_compl:entry
-/ qla_starttime[(this->qla_comp_cmd = (struct scsi_cmnd *) ((srb_t *)arg0)->u.scmd.cmd)] /
-{
-	this->qla_opcode = this->qla_comp_cmd->cmnd[0];
-	this->status = stringof((this->qla_comp_cmd->result == 0) ? "Success" : "Failed");
-	this->qla_start = (int64_t) qla_starttime[this->qla_comp_cmd];
-	this->qla_elapsed = (timestamp - this->qla_start) / 1000000;
-	@qla_lat[opcode[this->qla_opcode], this->status] = quantize(this->qla_elapsed);
-	qla_starttime[this->qla_comp_cmd] = 0;
-}
-
 
 END,
 tick-$1s
@@ -103,12 +90,7 @@ tick-$1s
 	printf("            Command      OpCode    Status       Count\n");
 	printf("        =============================================================\n");
 	printa("            %-10s    0x%-2x     %-10s  %@d\n", @cmd_count);
-	printf("        =============================================================\n");
-	printf("\n      Sample Time : %-25Y Latency at Qlogic Adapter layer\n", walltimestamp);
-	printf("========================================================\n");
-	printa("        %-36s %-5d %@d  \t(ms)\n        ", @qla_lat);
 	printf("========================================================\n");
 	clear(@lat);
 	clear(@cmd_count);
-	clear(@qla_lat);
 }

@@ -1,0 +1,43 @@
+#pmieconf-rules 1
+# --- DO NOT MODIFY THIS FILE --- see pmieconf(5)
+#
+rule    oled.oom_watch
+        summary = "$rule$"
+        enumerate = hosts
+        predicate =
+"some_host (
+    (100 * mem.util.free / mem.physmem) < $memfree_threshold$
+    && (100 * mem.util.swapFree / mem.util.swapTotal) < $swapfree_threshold$
+)"
+        enabled = no
+        version = 1
+        help    = "Kill the process from defined list of monitored processes";
+
+double  memfree_threshold
+        default = 0
+        help    = "memfree threshold";
+
+double  swapfree_threshold
+        default = 0
+        help    = "swapfree threshold";
+
+string  rule
+        default = "oled oom watch"
+        modify  = no
+        display = no;
+
+string  delta
+        default = "30 sec"
+        help    = "OOM monitor frequency";
+
+string  holdoff
+        default = "0"
+        help    = "OOM holdoff";
+
+shell   oom_action
+        enabled = yes
+        default = "/usr/bin/sudo /usr/sbin/oled oomwatch -k"
+        help = "oom_action";
+
+#
+# --- DO NOT MODIFY THIS FILE --- see pmieconf(5)

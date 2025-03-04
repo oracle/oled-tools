@@ -18,6 +18,10 @@ The tool samples CPU utilization for intervals of _SECONDS_ (5 seconds by
 default), and if the configured thresholds are reached in that interval, the
 commands specified with *-c* are executed.
 
+The exception to this is the _idle_ threshold.  The test for _idle_ is inverted.
+If you specify *-s idle:50* the commands specified with *-c* will be executed
+when the %idle reaches 50 or LOWER.
+
 At least one threshold to watch must be specified with *-s*.  If more than one
 threshold is specified, i.e. *-s* is specified more than once, the commands
 will only trigger if all the thresholds are reached in a given interval.  These

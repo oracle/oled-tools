@@ -1,4 +1,4 @@
-#!/usr/sbin/dtrace -qs
+#!/usr/sbin/dtrace -Cqs
 
 /*
  * Copyright (c) 2024, Oracle and/or its affiliates.
@@ -21,14 +21,18 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  *
- * Author(s): Rajan Shanmugavelu
+ * Author(s): Rajan Shanmugavelu, Shminderjit Singh
  * Purpose: to measure nvme IO latency in microseconds (us).
- * The script requires 2 arguments:
- *    - the reporting period (in secs) for latency
- *    - the reporting period (in secs) for command completion
+ * The script requires 1 argument:
+ *    - the reporting period (in secs).
+ * and a compilation flag "-D uek7" for uek7 run only.
  * The DTrace 'fbt' and 'profile' modules need to be loaded
  * ('modprobe -a fbt profile') for UEK5.
  * Sample output: Refer to the file nvme_io_comp_example.txt
+ */
+
+/*
+ * min_kernel 4.14.35-2047.539.2,5.4.17-2136.315.5.8,5.15.0-100.52.2
  */
 
 #pragma D option dynvarsize=100m
@@ -39,7 +43,7 @@ string stat[ushort_t];
 
 dtrace:::BEGIN
 {
-	printf("%d is latency interval, %d is cmd comp interval\n", $1, $2);
+        printf("%d is reporting interval.\n", $1);
 
 	ncmd[0x00] = "FLUSH";
 	ncmd[0x01] = "WRITE";
@@ -73,8 +77,13 @@ dtrace:::BEGIN
 ::nvme_setup_cmd:entry
 {
 	this->req = (struct request *) arg1;
-	(this->req->rq_disk != NULL) ? cmnd[this->req] = (struct nvme_command *)arg2 : 0;
-	(this->req->rq_disk != NULL) ? nvme_req_starttime[this->req] = timestamp : 0;
+#ifdef uek7
+        (this->req->rq_disk != NULL) ? cmnd[this->req] =
+                (struct nvme_command *)((struct request *) arg1 + sizeof(struct request)) : 0;
+#else
+        (this->req->rq_disk != NULL) ? cmnd[this->req] = (struct nvme_command *)arg2 : 0;
+#endif
+        (this->req->rq_disk != NULL) ? nvme_req_starttime[this->req] = timestamp : 0;
 }
 
 ::nvme_complete_rq:entry
@@ -86,7 +95,8 @@ dtrace:::BEGIN
 	this->opcode = (uint8_t) this->nvme_cmd->rw.opcode & 0xff;
 	this->nvme_req = (struct nvme_request *) (this->comp_req + 1);
 	this->nvme_req_stat = (uint16_t) (this->nvme_req->status & 0x7ff);
-	@opcount[this->comp_diskname, ncmd[this->opcode],
+	this->command = ncmd[this->opcode] != NULL ?  ncmd[this->opcode]: "UNKNOWN";
+	@opcount[this->comp_diskname, this->command,
 		stat[this->nvme_req_stat]] = count();
 	@lat_time[this->comp_diskname] = quantize((timestamp - this->start) / 1000);
 	cmnd[this->comp_req] = NULL;
@@ -99,16 +109,10 @@ tick-$1s, END
 	printf("\t========================================================\n");
 	printa("\t\t%s %@5u\t(us)\n", @lat_time);
 	printf("\t========================================================\n");
-	clear(@lat_time);
-}
-
-tick-$2s, END 
-{
-	printf("\n\tSample Time : %-25Y\n", walltimestamp);
-	printf("\t=======================================================\n");
 	printf("\tDevice\t  Command\t  Status\t\tCount\n");
 	printf("\t=======================================================\n");
 	printa("\t%s     %-12s %-20s 	 %@d\n", @opcount);
 	printf("\t=======================================================\n");
 	clear(@opcount);
+	clear(@lat_time);
 }

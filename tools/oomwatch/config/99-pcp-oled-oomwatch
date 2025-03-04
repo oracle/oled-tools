@@ -1,0 +1,1 @@
+pcp ALL=(ALL) NOPASSWD:/usr/sbin/oled

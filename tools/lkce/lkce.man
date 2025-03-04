@@ -1,15 +1,15 @@
-.TH OLED LKCE 8 "Jul 2021" "Oracle Linux Enhanced Diagnostics"
+.TH OLED LKCE 8 "Sep 2024" "Oracle Linux Enhanced Diagnostics"
 
 .SH NAME
 oled lkce \- Linux Kernel Core Extractor
 
 .SH SYNOPSIS
-\fB oled lkce\fR [report \fIreport-options\fR] [configure \fIconfig-options\fR] [enable_kexec|disable_kexec|status] [clean|list|help]
+\fBoled lkce\fR [report \fIreport-options\fR] [configure \fIconfig-options\fR] [enable_kexec|disable_kexec|status] [clean|list|help]
 
 .SH DESCRIPTION
-\fBlkce command\fR is used to interact with Linux Kernel Core Extractor[LKCE]. It is used to generate report from vmcore. lkce can run user scripts in kexec kernel.
+The \fBoled lkce\fR command is used to interact with Linux Kernel Core Extractor (LKCE). It is used to generate reports from vmcore files. LKCE can run user scripts in the kexec kernel.
 
-Once configured it can generate a report from a kexec kernel when system crashes. This is useful if the size of vmcore is too large to copy or send across for analysis or when generating vmcore is not preferred.
+Once configured, it can generate a report from a kexec kernel when the system crashes. This is useful if the size of vmcore is too large to copy or send across for analysis, or when generating a vmcore is not preferred.
 
 .SH OPTIONS
 .TP
@@ -18,22 +18,28 @@ Once configured it can generate a report from a kexec kernel when system crashes
 report-options:
 .RE
 .RS 3
-\fB\-\-vmcore=\fI/path/to/vmcore\fR	- path to vmcore file for report generation (required)
+[\fB\-\-report_cmd=\fIcrash|corelens\fR]              - program to run on cores in kdump. either crash or corelens. defaults to corelens
 .RE
 .RS 3
-[\fB\-\-vmlinux=\fI/path/to/vmlinux\fR]	- use this vmlinux instead of already configured value
+[\fB\-\-vmcore=\fI/path/to/vmcore\fR]                - path to the vmcore file for report generation (required)
 .RE
 .RS 3
-[\fB\-\-crash_cmds=\fIcmd1,cmd2,...\fR]	- comma seperated crash cmds to be used in report generation instead of configured commands
+[\fB\-\-corelens_args_file=\fI/path/to/args/file\fR] - path to the file containing corelens command line arguments (corelens only)
 .RE
 .RS 3
-[\fB\-\-outfile=\fI/path/to/outfile\fR]	- write output to outfile. By default output goes to stdout
+[\fB\-\-vmlinux=\fI/path/to/vmlinux\fR]              - use this vmlinux file instead of the existing configured value (crash only)
+.RE
+.RS 3
+[\fB\-\-crash_cmds=\fIcmd1,cmd2,...\fR]              - comma-separated crash commands to be used in report generation (crash only)
+.RE
+.RS 3
+[\fB\-\-outfile=\fI/path/to/outfile\fR]              - write output to outfile. By default, output goes to stdout
 .RE
 
 .TP
-\fBconfigure --default\fR - Configure with default values, overwriting the existing values.
+\fBconfigure --default\fR - Write a configuration file with default values. This overwrites the existing configuration file.
 .TP
-\fBconfigure [--show]\fR  - Show the configured values. This is the default when no config-options are given.
+\fBconfigure [--show]\fR  - Show the configured values. This is the default action when no config-options are given.
 
 .TP
 \fBconfigure [config-options]\fR - other possible options
@@ -41,29 +47,35 @@ report-options:
 config-options:
 .RE
 .RS 3
-[\fB\-\-vmlinux_path=\fI/path/to/vmlinux\fR]  - set vmliux_path to given value
+[\fB\-\-report_cmd=\fIcrash|corelens\fR]          - program to run on cores in kdump. either crash or corelens. defaults to corelens
 .RE
 .RS 3
-[\fB\-\-crash_cmds_file=\fI/path/to/file\fR]  - set crash_cmds_file to given value
+[\fB\-\-vmcore=\fIyes/no\fR]                     - set vmcore to the given value. controls vmcore generation in kexec kernel
 .RE
 .RS 3
-[\fB\-\-vmcore=\fIyes/no\fR]	- set vmcore to given value. Controls vmcore generation in kexec kernel.
+[\fB\-\-corelens_args_file=\fI/path/to/file\fR]  - set corelens_args_file to the given value (corelens only)
 .RE
 .RS 3
-[\fB\-\-max_out_files=\fI<number>\fR]	- set max_out_files to given value
+[\fB\-\-vmlinux=\fI/path/to/vmlinux\fR]          - use this vmlinux file instead of the existing configured value (crash only)
+.RE
+.RS 3
+[\fB\-\-crash_cmds_file=\fI/path/to/file\fR]     - set crash_cmds_file to the given value (crash only)
+.RE
+.RS 3
+[\fB\-\-max_out_files=\fI<number>\fR]            - set max_out_files to the given value
 .RE
 
 .TP
-\fBenable_kexec\fR - enable lkce to run user scripts in kexec kernel.
+\fBenable_kexec\fR - enable LKCE to run user scripts in kexec kernel.
 
 .TP
-\fBdisable_kexec\fR - disable lkce to run user scripts in kexec kernel.
+\fBdisable_kexec\fR - disable LKCE to run user scripts in kexec kernel.
 
 .TP
-\fBstatus\fR - check the status of lkce configuration
+\fBstatus\fR - check the status of LKCE configuration.
 
 .TP
-\fBclean\fR - remove all but last 3 kexec report files.
+\fBclean\fR - remove all but last <max_out_files> kexec report files.
 
 .TP
 \fBclean --all\fR - remove all the kexec report files.
@@ -71,36 +83,37 @@ config-options:
 .TP
 \fBlist\fR - list the kexec report files.
 
-.SH HOW TO SET UP LKCE TO GENERATE KDUMP REPORT
-Make sure kexec-tools pkg is installed and you can generate a vmcore. Then, run these commands to enable lkce:
+.SH HOW TO SET UP LKCE TO GENERATE KDUMP REPORTS
+Make sure the kexec-tools package is installed and you can generate a vmcore. Then, run these commands to enable LKCE:
 .RS 0
-# yum install oled-tools
+# yum / dnf install oled-tools
 .RE
 .RS 0
 # oled lkce enable_kexec
 .RE
 
-Crash the system manually. Once the machine boots, run 'oled lkce list'. Verify the listed file for output. Keep the system in configured state to generate the report when it crashes.
+Crash the system manually (i.e. 'echo c > /proc/sysrq-trigger'). Once the machine boots, run 'oled lkce list'. Verify the listed file(s) for output. Keep the system in the configured state to generate reports when it crashes.
 
 .SH EXAMPLES
 .RS 0
 # oled lkce report --vmcore=/var/crash/127.0.0.1-2020-12-29-17\:17\:45/vmcore
 .RE
 .RS 0
-# oled lkce report --vmcore=/var/crash/127.0.0.1-2020-12-29-17\:17\:45/vmcore --crash_cmds=bt,sys
+# oled lkce report --vmcore=/var/crash/127.0.0.1-2020-12-29-17\:17\:45/vmcore --corelens_args_file=/etc/oled/lkce/corelens_args_file
 .RE
 .RS 0
-# oled lkce report --vmcore=/var/crash/127.0.0.1-2020-12-29-17\:17\:45/vmcore --crash_cmds=bt,sys --outfile=/tmp/outfile.txt
+# oled lkce report --vmcore=/var/crash/127.0.0.1-2020-12-29-17\:17\:45/vmcore --corelens_args_file=/etc/oled/lkce/corelens_args_file --outfile=/tmp/outfile.txt
 .RE
+.RS 0
+# oled lkce report --report_cmd=crash --vmcore=/var/crash/127.0.0.1-2020-12-29-17\:17\:45/vmcore --crash_cmds=bt,sys
 
-.RS 0
 # oled lkce configure --default
 .RE
 .RS 0
 # oled lkce configure --show
 .RE
 .RS 0
-# oled lkce configure --vmlinux_path=/usr/lib/debug/lib/modules/4.14.35-1902.3.1.el7uek.x86_64/vmlinux
+# oled lkce configure oled lkce configure --max_out_files=40
 .RE
 
 # oled lkce help
@@ -124,10 +137,17 @@ Crash the system manually. Once the machine boots, run 'oled lkce list'. Verify 
 
 .SH MISC
 .TP
-kexec kernel is a secondary kernel used to collect the memory image[vmcore] of the first kernel when system crashes. kexec-tools pkg is used to configure the kexec kernel.
+The kexec kernel is a secondary kernel used to collect the memory image (vmcore) of the first kernel when the system crashes. The kexec-tools package is used to configure the kexec kernel.
 
 .TP
-LKCE provides an environment inside kexec kernel to run user scripts. One such user script used by lkce to generate the vmcore report when the system crashes. LKCE links with kdump[of kexec-tools] service as kdump_pre hook to run scripts inside kexec kernel.
+LKCE provides an environment inside the kexec kernel to run user scripts. One such user script is used by LKCE to generate the vmcore report when the system crashes. LKCE links with the kdump (of kexec-tools) service via a \fIkdump_pre\fP hook set in /etc/kdump.conf to run scripts inside the kexec kernel.
+
+.TP
+If there is already a \fIkdump_pre\fP parameter defined in /etc/kdump.conf, manual intervention is necessary to configure LKCE. More information is available at https://blogs.oracle.com/linux/ and https://support.oracle.com/.
+
+.TP
+When using DWARF debugging symbols, at least 768MB of available memory is required for the report command inside the kdump environment. This can be configured via the \fIcrashkernel\fR kernel command line parameter. To ensure there is enough available memory for the report command, please set \fBcrashkernel=1G\fR.
+
 
 .SH FILES
 .TP

@@ -67,17 +67,7 @@ class Memstate(Base):
             print("")
             self.print_header = False
 
-    def memstate_opt_none(self):
-        """
-        Display the memory usage summary, and run a quick health check.
-        """
-        self.meminfo.display_usage_summary()
-        self.numa.memstate_check_numa()
-        self.slabinfo.memstate_check_slab()
-        self.rss.memstate_check_rss()
-        self.check_health()
-
-    def memstate_opt_all(self, verbose):
+    def memstate_opt_none(self, verbose):
         """
         Display memory usage summary, along with a list of user processes
         consuming most memory and swap, and run a quick health check.
@@ -288,8 +278,6 @@ def validate_args(args):
     """Validate user-provided arguments.
 
     Checks if there are any invalid combinations of arguments:
-      - "all" cannot be mixed with other options (except "verbose" and
-        "frequency")
       - "verbose" can be combined with any other option
       - "frequency" cannot be used if an input file is provided (for "slab" or
         "numa")
@@ -301,20 +289,6 @@ def validate_args(args):
             print(
                 "Option -n/--numa does not support -f/--frequency; "
                 "see usage for more details.")
-            return 1
-        if (args.slab is not None and args.slab != 'nofile'):
-            print(
-                "Option -s/--slab INPUT_FILE does not support -f/--frequency; "
-                "see usage for more details.")
-            return 1
-    if args.all:
-        # pylint: disable=too-many-boolean-expressions
-        if (args.pss
-                or (args.numa is not None and args.numa != 'nofile')
-                or (args.slab is not None and args.slab != 'nofile')):
-            print(
-                "Option -a/--all can only be combined with -v/--verbose and "
-                "-f/--frequency; see usage for more details.")
             return 1
     return 0
 
@@ -332,13 +306,11 @@ def main():
         const=constants.DEFAULT_SHOW_PSS_SUMMARY,
         help="display per-process memory usage")
     parser.add_argument(
-        "-s", "--slab", metavar="FILE", help="analyze/display slab usage",
-        nargs="?", const="nofile")
+        "-s", "--slab", action="store_true",
+        help="analyze/display slab usage")
     parser.add_argument(
         "-n", "--numa", metavar="FILE", nargs="?", const="nofile",
         help="analyze/display NUMA stats")
-    parser.add_argument(
-        "-a", "--all", help="display all data", action="store_true")
     parser.add_argument(
         "-v", "--verbose", action="store_true",
         help="verbose data capture; combine with other options")
@@ -378,12 +350,6 @@ def main():
         numa.process_numa_maps(constants.NO_LIMIT)
         return
 
-    if args.slab is not None and args.slab != 'nofile':
-        print("Reading slabinfo from file: " + args.slab)
-        slabinfo = Slabinfo(args.slab)
-        slabinfo.memstate_check_slab(constants.NO_LIMIT)
-        return
-
     # Live memstate data capture (either one-shot or periodic).
     if args.frequency is not None:
         interval = int(args.frequency)
@@ -411,26 +377,17 @@ def main():
     memstate.memstate_header()
 
     while True:
-        if args.all:
-            args_passed = True
-            memstate.memstate_opt_all(opt_verbose)
         if args.pss:
             args_passed = True
             memstate.memstate_opt_pss(args.pss, opt_verbose)
-        if args.slab is not None:
+        if args.slab:
             args_passed = True
             memstate.memstate_opt_slab(opt_verbose)
         if args.numa is not None:
             args_passed = True
             memstate.memstate_opt_numa(opt_verbose)
         if not args_passed:
-            if opt_verbose:
-                exit_with_msg(
-                    "Option -v/--verbose should be used in combination with "
-                    "other options; see -h/--help or the man page for more "
-                    "details.")
-                return
-            memstate.memstate_opt_none()
+            memstate.memstate_opt_none(opt_verbose)
 
         if interval == 0:
             break

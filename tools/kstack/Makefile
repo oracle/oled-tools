@@ -26,7 +26,7 @@ clean:
 
 install:
 	@echo "install:$(CURDIR)"
-	install --mode=755 kstack $(BINDIR)/kstack
+	install --mode=755 kstack $(OLEDBINDIR)/kstack
 	gzip -c $(CURDIR)/kstack.man > $(MANDIR)/oled-kstack.8.gz
 	chmod 644 $(MANDIR)/oled-kstack.8.gz
 	@echo "KSTACK successfully installed!"
@@ -34,5 +34,5 @@ install:
 uninstall:
 	@echo "uninstall:$(CURDIR)"
 	rm -f $(MANDIR)/oled-kstack.8.gz
-	rm -f $(BINDIR)/kstack
+	rm -f $(OLEDBINDIR)/kstack
 	@echo "KSTACK successfully uninstalled!"
